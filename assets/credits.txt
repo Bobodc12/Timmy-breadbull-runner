@@ -1,3 +1,4 @@
 farmer: https://sketchfab.com/3d-models/farmer-42abfaee4bd8481ab39661e36cae74c6
 obstacle1: https://sketchfab.com/3d-models/2019-ford-ranger-raptor-police-cities-skylines-47ce3eac47524efc85363cca7513751a
 fence: https://sketchfab.com/3d-models/barbed-wire-fence-f3bf62b0e9194cdf9a78b334d40f39c7
+bus: https://sketchfab.com/3d-models/school-bus-a959ee8ce17d434f9fdbc93cad199a21
