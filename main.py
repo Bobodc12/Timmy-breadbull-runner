@@ -45,7 +45,7 @@ font_path = 'assets/textures/ranking/vcr.ttf'
 
 pause_title = Text(text='TIMMY REDBULL RUNNER', position=(-0.8, 0.1), scale=2, font=font_path, color=color.red)
 pause_guide = Text(text='Press space to start', position=(-0.8, -0.1), scale=1.75, font=font_path, color=color.white)
-pause_splash = Text(text=random.choice(string_list), position=(-0.45, 0.03), scale=1, font=font_path, color=color.yellow, rotation=(0, 0, -15))
+pause_splash = Text(text=random.choice(string_list), position=(-0.45, 0.03, -0.1), scale=1, font=font_path, color=color.yellow, rotation=(0, 0, -15))
 pause_bg = Entity(model='quad', scale=(100,100), position=(4, 1, 0), rotation=(0, 90, 0), color=(0, 0, 0, 0.9))
 
 class ReactiveList(list):
@@ -279,7 +279,7 @@ def update():
             for item in list(letters_data):
                 if "SWOOSH" in item:
                     letters_data.remove(item)          
-            new_swoosh_text = f"[+] SWOOSH ({round(move_speed * 10, 1)}MPH)"
+            new_swoosh_text = f"+ SWOOSH ({round(move_speed * 10, 1)}MPH)"
             ranking_points += round(move_speed * 100, 0)
             letters_data.append(new_swoosh_text)
             def remove_swoosh():
