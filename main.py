@@ -29,6 +29,7 @@ with open("data.json", "r") as file:
 
 app = Ursina()
 player = Entity(model='assets/farmer.obj', texture='lambert1_albedo', scale=(0.5), position=(0, 1, 0), collider='box') #his name is timmy, and he likes redbull. copyright? never heard of it (if i ever release it, im changing redbull to breadbull)
+idle_player = FrameAnimation3d('assets/farmer/idle/farmer', texture='lambert1_albedo', scale=(0.5), position=(0, 1, 0), fps=5) #10 frame animation. peak
 sky = Sky(texture='sky_sunset')
 ground = Entity(model='plane', texture='grass_tintable', color=Color(1, 1, 0.3, 1), scale=(50, 50, 50), texture_scale=(1, 1))
 bg_music = None
@@ -55,6 +56,9 @@ pause_title = Text(text='TIMMY REDBULL RUNNER', position=(-0.8, 0.1), scale=2, f
 pause_guide = Text(text='Press space to start', position=(-0.8, -0.1), scale=1.75, font=font_path, color=color.white)
 pause_splash = Text(text=random.choice(string_list), position=(-0.45, 0.03, -0.1), scale=1, font=font_path, color=color.yellow, rotation=(0, 0, -15)) #as i said, these are goated
 pause_bg = Entity(model='quad', scale=(100,100), position=(4, 1, 0), rotation=(0, 90, 0), color=(0, 0, 0, 0.9))
+
+player.visible = False
+idle_player.visible = True
 
 class ReactiveList(list):
     def __init__(self, on_change_callback, *args):
@@ -185,6 +189,9 @@ def input(key):
         pause_title.fade_out(duration=0.2)
         pause_splash.fade_out(duration=0.2)
         pause_guide.fade_out(duration=0.2)
+
+        player.visible = True
+        idle_player.visible = False
         invoke(start_game, delay=3) #gives the player some time to observe their surroundings
     elif key == 'escape':
         is_paused = not is_paused
@@ -248,6 +255,7 @@ def start_game():
 def update():
     global move_speed, last_rpc_update, points, dead, is_jumping, is_crouching, bg_music, started, speedcamera_taken, car_passed, fence_passed, ranking_points, ranking_letter, ranking_decay #why are there so many
     player.rotation_y += 50 * time.dt #dis is walking animation. dont touch (actually. touch it once u got 3 .obj files. one for each animation keyframe. cuz ursina like hates armatures)
+    idle_player.rotation_y += 50 * time.dt
     if is_paused and is_crouching:
         resetcrouch.pause()
     elif not is_paused and is_crouching:
