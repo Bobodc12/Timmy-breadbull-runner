@@ -6,7 +6,7 @@ on:
       - 'v*'
 
 permissions:
-  contents: write
+  contents: write 
 
 jobs:
   build:
@@ -29,8 +29,9 @@ jobs:
 
     - name: Build with PyInstaller
       run: |
-        pyinstaller --onefile --windowed main.py
-        # Change 'main.py' to your actual script filename
+        pyinstaller --onefile --windowed --add-data "data.json;." --add-data "assets;assets" main.py
+        # --add-data "data.json;." puts the json at the root of the app
+        # --add-data "assets;assets" bundles your whole assets folder recursively
 
     - name: Upload to GitHub Releases
       uses: softprops/action-gh-release@v2

@@ -6,6 +6,8 @@ import time
 import math
 from collections import Counter
 import json
+import sys
+import os
 
 client_id = '1535037932828889178' #for discord rpc
 
@@ -19,11 +21,18 @@ try:
 except Exception as e:
     print("launching game without discord RPC") #cuz i will prob play this game on my school laptop in the future
 
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
 start_time = time.time()
 last_rpc_update = 0
 update_interval = 15 #to avoid rate limiting
 
-with open("data.json", "r") as file:
+with open(resource_path("data.json"), "r") as file:
         data = json.load(file)
         string_list = data.get("messages", []) #i swear these are goated
 
