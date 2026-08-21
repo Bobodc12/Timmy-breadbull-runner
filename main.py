@@ -33,6 +33,7 @@ idle_player = FrameAnimation3d('assets/farmer/idle/farmer', texture='lambert1_al
 sky = Sky(texture='sky_sunset')
 ground = Entity(model='plane', texture='grass_tintable', color=Color(1, 1, 0.3, 1), scale=(50, 50, 50), texture_scale=(1, 1))
 bg_music = None
+mm_bg_music = None
 
 hedgeL = Entity(model='cube', texture='grass', scale=(1, 3, 50), position=(-5, 0, 0)) #hedges? in the desert?
 hedgeR = Entity(model='cube', texture='grass', scale=(1, 3, 50), position=(5, 0, 0))
@@ -180,7 +181,7 @@ falldown = None
 
 def input(key):
     global current_lane, started
-    global is_jumping, is_crouching, resetcrouch, is_paused, falldown, started_animation, bhop_count
+    global is_jumping, is_crouching, resetcrouch, is_paused, falldown, started_animation, bhop_count, bg_music
     global ranking
     if key == "space" and not started and not started_animation:
         started_animation = True
@@ -263,7 +264,7 @@ def start_game():
 
 
 def update():
-    global move_speed, last_rpc_update, points, dead, is_jumping, is_crouching, bg_music, started, speedcamera_taken, car_passed, fence_passed, ranking_points, ranking_letter, ranking_decay, last_jump #why are there so many
+    global move_speed, last_rpc_update, points, dead, is_jumping, is_crouching, bg_music, mm_bg_music, started, speedcamera_taken, car_passed, fence_passed, ranking_points, ranking_letter, ranking_decay, last_jump #why are there so many
     player.rotation_y += 50 * time.dt #dis is walking animation. dont touch (actually. touch it once u got 3 .obj files. one for each animation keyframe. cuz ursina like hates armatures)
     idle_player.rotation_y += 50 * time.dt
     if is_paused and is_crouching:
@@ -390,6 +391,9 @@ def update():
         last_rpc_update = time.time()
 
     if started_animation and bg_music is None:
-        bg_music = Audio('assets/timmyredbullrunner.wav', loop=True, autoplay=True) #dis a fire beat dont touch (might add main menu music later)
+        mm_bg_music.stop()
+        bg_music = Audio('assets/timmyredbullrunner.wav', loop=True, autoplay=True) #dis a fire beat dont touch (might add main menu music later (done))
+    elif mm_bg_music is None:
+        mm_bg_music = Audio('assets/mainmenu.wav', loop=True, autoplay=True)
 
 app.run()
