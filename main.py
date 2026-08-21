@@ -98,9 +98,8 @@ ranking_decay = 15 #per second. this is like very bugged the first 10 seconds, i
 last_jump = 0
 bhop_count = 0
 
-message_duration = 5 # Variable for configuring how long something lasts (in seconds)
+message_duration = 5 #5 seconds is good dont touch
 
-# Pre-create text rows once to prevent massive FPS drops from destroying/creating every frame
 for i in range(8):
     x_pos = -0.45 + (i * 0.0027)
     y_pos = 0.1 - (i * 0.060)
@@ -108,7 +107,6 @@ for i in range(8):
     text_rows.append(row)
 
 def update_text_display():
-    # Only update text strings instead of destroying and spawning new Text entities
     for i in range(8):
         if i < len(letters_data):
             text_rows[i].text = str(letters_data[i])
@@ -269,7 +267,7 @@ def reset_crouch():
 
 def start_game():
     global started
-    started = True #top 10 most emotional functions in human history
+    started = True #top 10 most emotional functions in human history. 2 lines long
 
 
 def update():
@@ -351,6 +349,7 @@ def update():
 
         if obstacle3.x == player.x and player.intersects(obstacle3) and not godmode: #no way u jumping over this
             dead = True #yeah thats what i thought, u really tryna jump over a school bus?
+            #congrats school bus, ur the only obstacle without a ranking text
 
         if obstacle1.z < -10:
             obstacle1.z = 50
@@ -360,7 +359,7 @@ def update():
         if obstacle2.z < -10:
             obstacle2.z = 50
             obstacle2.x = random.choice(lanes)
-            fence_passed = False # Reset fence bonus state when it respawns
+            fence_passed = False
 
         if obstacle3.z < -10:
             obstacle3.z = 50 #this is so shitty. im lovin it
@@ -374,9 +373,9 @@ def update():
             speedcamera.z = 200
             speedcamera_taken = False
 
-        move_speed += 0.0001
+        move_speed += 0.0001 * (time.dt * 72) #so like next git commit, can i like add "* (time.dt * 72)" to this line. please? wait nuh uh im doing it now
 
-        points += 0.1 * multiplier
+        points += (0.1 * multiplier) * (time.dt * 72) #same thing with this one
 
         if is_jumping:
             last_jump = 0
