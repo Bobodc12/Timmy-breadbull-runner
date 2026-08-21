@@ -85,13 +85,16 @@ ranking_letter = "D"
 ranking_bar.scale_x = ranking_points / 130
 ranking_decay = 15 #per second. this is like very bugged the first 10 seconds, im lovin it
 
+last_jump = 0
+bhop_count = 0
+
 message_duration = 5 # Variable for configuring how long something lasts (in seconds)
 
 # Pre-create text rows once to prevent massive FPS drops from destroying/creating every frame
 for i in range(8):
-    x_pos = -0.870 + (i * 0.0027)
-    y_pos = 0.235 - (i * 0.030)
-    row = Text(text='', position=(x_pos, y_pos), font=font_path)
+    x_pos = -0.45 + (i * 0.0027)
+    y_pos = 0.1 - (i * 0.060)
+    row = Text(text='', position=(x_pos, y_pos), rotation_x=5, font=font_path, parent=ranking_bg, scale=3)
     text_rows.append(row)
 
 def update_text_display():
@@ -106,13 +109,11 @@ def add_ranking_points(points_to_add, message=None, stackable=True):
     global ranking_points
     ranking_points += points_to_add
     if message:
-        # Strip dynamic data (like speed numbers or stack tags) to find matching base messages
         base_msg = message.split(" [x")[0].split(" (")[0]
         
         found_index = -1
         current_count = 1
         
-        # Check if an identical base message type is already in letters_data
         for idx, item in enumerate(letters_data):
             item_base = item.split(" [x")[0].split(" (")[0]
             if item_base == base_msg:
@@ -136,7 +137,6 @@ def add_ranking_points(points_to_add, message=None, stackable=True):
                     letters_data.remove(message)
             invoke(remove_msg, delay=message_duration)
         else:
-            # If stackable is False, replace the current entry entirely (like swoosh)
             if found_index != -1:
                 letters_data.pop(found_index)
             letters_data.append(message)
@@ -155,6 +155,9 @@ lanes = [-3, 0, 3]
 points = 0
 multiplier = 1
 
+window.fullscreen = False
+window.borderless = False
+
 dead = False
 godmode = False #ooo you like cheating dont you?
 started = False
@@ -166,6 +169,7 @@ camera.z = 0 #-20
 camera.x = -7 #0
 camera.rotation_x = -5 #15
 camera.rotation_y = 90 #0
+#what the hell do those comments mean
 
 move_speed = 0.5
 
@@ -176,7 +180,7 @@ falldown = None
 
 def input(key):
     global current_lane, started
-    global is_jumping, is_crouching, resetcrouch, is_paused, falldown, started_animation
+    global is_jumping, is_crouching, resetcrouch, is_paused, falldown, started_animation, bhop_count
     global ranking
     if key == "space" and not started and not started_animation:
         started_animation = True
@@ -215,6 +219,12 @@ def input(key):
             if is_crouching:
                 reset_crouch()
                 resetcrouch.kill()
+            if last_jump <= 0.5:
+                bhop_count += 1
+                if bhop_count >= 3:
+                    add_ranking_points(50, f"+ BHOP (X{bhop_count})", stackable=False)
+            else:
+                bhop_count = 0
             is_jumping = True
             player.animate_y(player.y + 2, duration=0.3 / move_speed, curve=curve.out_sine)
             player.animate('rotation_x', 0, duration=0.3 / move_speed, curve=curve.out_sine)
@@ -253,7 +263,7 @@ def start_game():
 
 
 def update():
-    global move_speed, last_rpc_update, points, dead, is_jumping, is_crouching, bg_music, started, speedcamera_taken, car_passed, fence_passed, ranking_points, ranking_letter, ranking_decay #why are there so many
+    global move_speed, last_rpc_update, points, dead, is_jumping, is_crouching, bg_music, started, speedcamera_taken, car_passed, fence_passed, ranking_points, ranking_letter, ranking_decay, last_jump #why are there so many
     player.rotation_y += 50 * time.dt #dis is walking animation. dont touch (actually. touch it once u got 3 .obj files. one for each animation keyframe. cuz ursina like hates armatures)
     idle_player.rotation_y += 50 * time.dt
     if is_paused and is_crouching:
@@ -318,7 +328,7 @@ def update():
         if obstacle1.x == player.x and not godmode: 
             if not is_jumping and player.intersects(obstacle1):
                 dead = True
-            elif not car_passed and obstacle1.z <= player.z:
+            elif not car_passed and obstacle1.z <= player.z and is_jumping == True:
                 car_passed = True
                 add_ranking_points(50, "+ HOOD JUMP", stackable=True)
 
@@ -357,6 +367,11 @@ def update():
         move_speed += 0.0001
 
         points += 0.1 * multiplier
+
+        if is_jumping:
+            last_jump = 0
+        else:
+            last_jump += time.dt
 
         points_counter.text = f'Points: {round(points, 0)}'
         multi_counter.text = f'X{multiplier}'
