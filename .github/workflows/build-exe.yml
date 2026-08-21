@@ -1,4 +1,4 @@
-name: Build and Release EXE
+name: Build and Release ZIP
 
 on:
   push:
@@ -27,13 +27,17 @@ jobs:
         pip install pyinstaller
         if (Test-Path "requirements.txt") { pip install -r requirements.txt }
 
-    - name: Build with PyInstaller
+    - name: Build with PyInstaller (Folder Mode)
       run: |
-        pyinstaller --onefile --windowed --collect-all panda3d --collect-data ursina --add-data "data.json;." --add-data "assets;assets" main.py
-        # --collect-data ursina grabs built-in assets like default fonts (OpenSans-Regular.ttf)
+        pyinstaller --onedir --windowed --collect-all panda3d --collect-data ursina --add-data "data.json;." --add-data "assets;assets" main.py
+        # Changed --onefile to --onedir so it outputs a folder with all dependencies and assets intact
+
+    - name: Zip the Build Folder
+      run: |
+        Compress-Archive -Path "dist/main" -DestinationPath "TimmyRedbullRunner-Windows.zip"
 
     - name: Upload to GitHub Releases
       uses: softprops/action-gh-release@v2
       with:
-        files: dist/*.exe
+        files: TimmyRedbullRunner-Windows.zip
         generate_release_notes: true
