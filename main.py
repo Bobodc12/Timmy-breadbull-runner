@@ -75,20 +75,75 @@ class ReactiveList(list):
         return item
 
 text_rows = []
-letters_data = ReactiveList(lambda: update())
+letters_data = ReactiveList(lambda: update_text_display())
 ranking_points = 200
 ranking_letter = "D"
 ranking_bar.scale_x = ranking_points / 130
 ranking_decay = 15 #per second. this is like very bugged the first 10 seconds, im lovin it
 
+message_duration = 5 # Variable for configuring how long something lasts (in seconds)
+
+# Pre-create text rows once to prevent massive FPS drops from destroying/creating every frame
 for i in range(8):
     x_pos = -0.870 + (i * 0.0027)
     y_pos = 0.235 - (i * 0.030)
-    
     row = Text(text='', position=(x_pos, y_pos), font=font_path)
     text_rows.append(row)
 
+def update_text_display():
+    # Only update text strings instead of destroying and spawning new Text entities
+    for i in range(8):
+        if i < len(letters_data):
+            text_rows[i].text = str(letters_data[i])
+        else:
+            text_rows[i].text = ''
+
+def add_ranking_points(points_to_add, message=None, stackable=True):
+    global ranking_points
+    ranking_points += points_to_add
+    if message:
+        # Strip dynamic data (like speed numbers or stack tags) to find matching base messages
+        base_msg = message.split(" [x")[0].split(" (")[0]
+        
+        found_index = -1
+        current_count = 1
+        
+        # Check if an identical base message type is already in letters_data
+        for idx, item in enumerate(letters_data):
+            item_base = item.split(" [x")[0].split(" (")[0]
+            if item_base == base_msg:
+                found_index = idx
+                if " [x" in item:
+                    try:
+                        current_count = int(item.split(" [x")[1].replace("]", ""))
+                    except ValueError:
+                        current_count = 1
+                break
+
+        if stackable:
+            if found_index != -1:
+                letters_data.pop(found_index)
+                current_count += 1
+                message = f"{base_msg} [x{current_count}]"
+            
+            letters_data.append(message)
+            def remove_msg():
+                if message in letters_data:
+                    letters_data.remove(message)
+            invoke(remove_msg, delay=message_duration)
+        else:
+            # If stackable is False, replace the current entry entirely (like swoosh)
+            if found_index != -1:
+                letters_data.pop(found_index)
+            letters_data.append(message)
+            def remove_msg():
+                if message in letters_data:
+                    letters_data.remove(message)
+            invoke(remove_msg, delay=message_duration)
+
 speedcamera_taken = False
+car_passed = False
+fence_passed = False
 
 current_lane = 0
 lanes = [-3, 0, 3]
@@ -150,7 +205,6 @@ def input(key):
             current_lane -= 1
     elif key == 'space' or key == 'w' or key == 'up arrow':
         if not is_jumping and player.y == 1 or player.y == 0.5: #patches flight. with good enough skills, u could skip most of the game using these glitches
-            #one op glitch i found is that if u jump during the crouching animation. u fly up. but reset_crouch still plays. so the game doesnt know that ur jumping. so u could jump again
             if is_crouching:
                 reset_crouch()
                 resetcrouch.kill()
@@ -192,7 +246,7 @@ def start_game():
 
 
 def update():
-    global move_speed, last_rpc_update, points, dead, is_jumping, is_crouching, bg_music, started, speedcamera_taken, ranking_points, ranking_letter, ranking_decay #why are there so many
+    global move_speed, last_rpc_update, points, dead, is_jumping, is_crouching, bg_music, started, speedcamera_taken, car_passed, fence_passed, ranking_points, ranking_letter, ranking_decay #why are there so many
     player.rotation_y += 50 * time.dt #dis is walking animation. dont touch (actually. touch it once u got 3 .obj files. one for each animation keyframe. cuz ursina like hates armatures)
     if is_paused and is_crouching:
         resetcrouch.pause()
@@ -205,53 +259,44 @@ def update():
         falldown.resume()
 
     if not dead and started and not is_paused:
-        for row in text_rows:
-            destroy(row)
-        text_rows.clear()
+        # Ranking tier calculations (optimized to run once per frame smoothly)
+        if ranking_points < 300:
+            ranking_letter = "D"
+            ranking_bar.scale_x = ranking_points / 130
+            ranking_decay = 15
+        elif ranking_points < 400:
+            ranking_letter = "C"
+            ranking_bar.scale_x = (ranking_points - 300) / 100
+            ranking_decay = 18.75
+        elif ranking_points < 500:
+            ranking_letter = "B"
+            ranking_bar.scale_x = (ranking_points - 400) / 100
+            ranking_decay = 22.5
+        elif ranking_points < 700:
+            ranking_letter = "A"
+            ranking_bar.scale_x = (ranking_points - 500) / 200
+            ranking_decay = 30
+        elif ranking_points < 850:
+            ranking_letter = "S"
+            ranking_bar.scale_x = (ranking_points - 700) / 150
+            ranking_decay = 45
+        elif ranking_points < 1000:
+            ranking_letter = "SS"
+            ranking_bar.scale_x = (ranking_points - 850) / 150
+            ranking_decay = 60
+        elif ranking_points < 1500:
+            ranking_letter = "SSS"
+            ranking_bar.scale_x = (ranking_points - 1000) / 500
+            ranking_decay = 90
+        else:
+            ranking_letter = "U" #U, for Ultrakill (yes. U.png is the ultrakill ranking. from ultrakill
+            ranking_bar.scale_x = 2.3
+            ranking_decay = 120
 
-        for i, letter in enumerate(letters_data[:8]):
-            x_pos = -0.870 + (i * 0.0027)
-            y_pos = 0.235 - (i * 0.030)
-            row = Text(text=str(letter), position=(x_pos, y_pos), font=font_path)
-            text_rows.append(row)
+        ranking.texture = f"{ranking_letter}.png"
 
-            if ranking_points < 300: #there has to be a way more efficient way to do this
-                ranking_letter = "D"
-                ranking_bar.scale_x = ranking_points / 130
-                ranking_decay = 15
-            elif ranking_points < 400:
-                ranking_letter = "C"
-                ranking_bar.scale_x = (ranking_points - 300) / 100
-                ranking_decay = 18.75
-            elif ranking_points < 500:
-                ranking_letter = "B"
-                ranking_bar.scale_x = (ranking_points - 400) / 100
-                ranking_decay = 22.5
-            elif ranking_points < 700:
-                ranking_letter = "A"
-                ranking_bar.scale_x = (ranking_points - 500) / 200
-                ranking_decay = 30
-            elif ranking_points < 850:
-                ranking_letter = "S"
-                ranking_bar.scale_x = (ranking_points - 700) / 150
-                ranking_decay = 45
-            elif ranking_points < 1000:
-                ranking_letter = "SS"
-                ranking_bar.scale_x = (ranking_points - 850) / 150
-                ranking_decay = 60
-            elif ranking_points < 1500:
-                ranking_letter = "SSS"
-                ranking_bar.scale_x = (ranking_points - 1000) / 500
-                ranking_decay = 90
-            else:
-                ranking_letter = "U" #U, for Ultrakill (yes. U.png is the ultrakill ranking. from ultrakill
-                ranking_bar.scale_x = 2.3
-                ranking_decay = 120
-
-            ranking.texture = f"{ranking_letter}.png"
-
-            ranking_points -= ranking_decay * time.dt
-            ranking_points = max(0.0, ranking_points)
+        ranking_points -= ranking_decay * time.dt
+        ranking_points = max(0.0, ranking_points)
 
         ground.texture_offset += Vec2(0, move_speed * time.dt)
         hedgeL.texture_offset += Vec2(0, move_speed * time.dt)
@@ -262,20 +307,32 @@ def update():
         obstacle3.z -= (move_speed * time.dt) * 30
         speedcamera.z -= (move_speed * time.dt) * 30
 
-        if obstacle1.x == player.x and player.intersects(obstacle1) and not is_jumping and not godmode: 
-            dead = True
-        if obstacle2.x == player.x and player.intersects(obstacle2) and not is_crouching and not godmode: 
-            dead = True
+        if obstacle1.x == player.x and not godmode: 
+            if not is_jumping and player.intersects(obstacle1):
+                dead = True
+            elif not car_passed and obstacle1.z <= player.z:
+                car_passed = True
+                add_ranking_points(50, "+ HOOD JUMP", stackable=True)
+
+        if obstacle2.x == player.x and player.intersects(obstacle2) and not godmode:
+            if not is_crouching:
+                dead = True
+            elif not fence_passed:
+                fence_passed = True
+                add_ranking_points(50, "+ SLIDE", stackable=True)
+
         if obstacle3.x == player.x and player.intersects(obstacle3) and not godmode: #no way u jumping over this
             dead = True #yeah thats what i thought, u really tryna jump over a school bus?
 
         if obstacle1.z < -10:
             obstacle1.z = 50
             obstacle1.x = random.choice(lanes)
+            car_passed = False
 
         if obstacle2.z < -10:
             obstacle2.z = 50
             obstacle2.x = random.choice(lanes)
+            fence_passed = False # Reset fence bonus state when it respawns
 
         if obstacle3.z < -10:
             obstacle3.z = 50 #this is so shitty. im lovin it
@@ -283,17 +340,7 @@ def update():
 
         if speedcamera.z < 2 and not speedcamera_taken:
             speedcamera_taken = True
-            for item in list(letters_data):
-                if "SWOOSH" in item:
-                    letters_data.remove(item)          
-            new_swoosh_text = f"+ SWOOSH ({round(move_speed * 10, 1)}MPH)"
-            ranking_points += round(move_speed * 100, 0)
-            letters_data.append(new_swoosh_text)
-            def remove_swoosh():
-                if new_swoosh_text in letters_data:
-                    letters_data.remove(new_swoosh_text)
-            
-            invoke(remove_swoosh, delay=10)
+            add_ranking_points(round(move_speed * 100, 0), f"+ SWOOSH ({round(move_speed * 10, 1)}MPH)", stackable=False)
 
         if speedcamera.z < -10:
             speedcamera.z = 200
