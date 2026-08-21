@@ -29,8 +29,8 @@ jobs:
 
     - name: Build with PyInstaller
       run: |
-        pyinstaller --onefile --windowed --collect-all panda3d --add-data "data.json;." --add-data "assets;assets" main.py
-        # --collect-all panda3d ensures Panda3D's graphics drivers, audio plugins, and Config.prc are safely bundled
+        pyinstaller --onefile --windowed --collect-all panda3d --collect-data ursina --add-data "data.json;." --add-data "assets;assets" main.py
+        # --collect-data ursina grabs built-in assets like default fonts (OpenSans-Regular.ttf)
 
     - name: Upload to GitHub Releases
       uses: softprops/action-gh-release@v2
