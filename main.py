@@ -103,7 +103,7 @@ message_duration = 5 #5 seconds is good dont touch
 for i in range(8):
     x_pos = -0.45 + (i * 0.0027)
     y_pos = 0.1 - (i * 0.060)
-    row = Text(text='', position=(x_pos, y_pos), rotation_x=5, font=font_path, parent=ranking_bg, scale=3)
+    row = Text(text='', position=(x_pos, y_pos), rotation_x=15, font=font_path, parent=ranking_bg, scale=3)
     text_rows.append(row)
 
 def update_text_display():
@@ -197,6 +197,11 @@ def input(key):
         camera.animate_z(-20, duration=1.0, curve=curve.out_sine)
         camera.animate('rotation_x', 15, duration=1.0, curve=curve.out_sine)
         camera.animate('rotation_y', 0, duration=1.0, curve=curve.out_sine)
+        pause_bg.animate_y(10, duration=1.0, curve=curve.out_sine)
+        pause_bg.animate_x(0, duration=1.0, curve=curve.out_sine)
+        pause_bg.animate_z(-17, duration=1.0, curve=curve.out_sine)
+        pause_bg.animate('rotation_x', 15, duration=1.0, curve=curve.out_sine)
+        pause_bg.animate('rotation_y', 0, duration=1.0, curve=curve.out_sine)
         pause_bg.fade_out(duration=0.2)
         pause_title.fade_out(duration=0.2)
         pause_splash.fade_out(duration=0.2)
@@ -269,6 +274,19 @@ def start_game():
     global started
     started = True #top 10 most emotional functions in human history. 2 lines long
 
+def die():
+    global dead
+    dead = True
+    player.animate_y(0.5, duration=0.1)
+    player.animate('rotation_x', 90, duration=0.1)
+    pause_bg.fade_in(duration=3, curve=curve.linear)
+    invoke(death_text, delay=2)
+
+def death_text():
+    pause_guide.text = "YOU DIED\nrespawning isnt implemented btw. restart the game"
+    pause_guide.origin = 0, 0
+    pause_guide.position = 0, 0
+    pause_guide.fade_in(duration=0.5, curve=curve.linear)
 
 def update():
     global move_speed, last_rpc_update, points, dead, is_jumping, is_crouching, bg_music, mm_bg_music, started, speedcamera_taken, car_passed, fence_passed, ranking_points, ranking_letter, ranking_decay, last_jump #why are there so many
@@ -335,20 +353,20 @@ def update():
 
         if obstacle1.x == player.x and not godmode: 
             if not is_jumping and player.intersects(obstacle1):
-                dead = True
+                die()
             elif not car_passed and obstacle1.z <= player.z and is_jumping == True:
                 car_passed = True
                 add_ranking_points(50, "+ HOOD JUMP", stackable=True)
 
         if obstacle2.x == player.x and player.intersects(obstacle2) and not godmode:
             if not is_crouching:
-                dead = True
+                die()
             elif not fence_passed:
                 fence_passed = True
                 add_ranking_points(50, "+ SLIDE", stackable=True)
 
         if obstacle3.x == player.x and player.intersects(obstacle3) and not godmode: #no way u jumping over this
-            dead = True #yeah thats what i thought, u really tryna jump over a school bus?
+            die() #yeah thats what i thought, u really tryna jump over a school bus?
             #congrats school bus, ur the only obstacle without a ranking text
 
         if obstacle1.z < -10:
