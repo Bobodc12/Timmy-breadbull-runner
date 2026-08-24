@@ -37,7 +37,7 @@ with open(resource_path("data.json"), "r") as file:
         string_list = data.get("messages", []) #i swear these are goated
 
 app = Ursina()
-player = Entity(model='assets/farmer.obj', texture='lambert1_albedo', scale=(0.5), position=(0, 1, 0)) #his name is timmy, and he likes redbull. copyright? never heard of it (if i ever release it, im changing redbull to breadbull)
+player = Entity(model='assets/farmer.obj', texture='lambert1_albedo', scale=(0.5), position=(0, 1, 0)) #his name is timmy, and he likes breadbull
 idle_player = FrameAnimation3d('assets/farmer/idle/farmer', texture='lambert1_albedo', scale=(0.5), position=(0, 1, 0), fps=5) #10 frame animation. peak
 player_col_cube = Entity(model='cube', color=color.red, position=(player.x, player.y, player.z), collider='box', visible=False)
 sky = Sky(texture='sky_sunset')
@@ -63,7 +63,7 @@ ranking_bar = Entity(model='quad', scale=(2.3, 0.20), position=(-5.7, 6.95, -1))
 
 font_path = 'assets/textures/ranking/vcr.ttf' #bros trynna be retro. retroslop (i googled ultrakill font and clicked the top result. VCR OSD Mono)
 
-pause_title = Text(text='TIMMY REDBULL RUNNER', position=(-0.8, 0.1), scale=2, font=font_path, color=color.red)
+pause_title = Text(text='TIMMY BREADBULL RUNNER', position=(-0.8, 0.1), scale=2, font=font_path, color=color.red)
 pause_guide = Text(text='Press space to start', position=(-0.8, -0.1), scale=1.75, font=font_path, color=color.white)
 pause_splash = Text(text=random.choice(string_list), position=(-0.45, 0.03, -0.1), scale=1, font=font_path, color=color.yellow, rotation=(0, 0, -15)) #as i said, these are goated
 pause_bg = Entity(model='quad', scale=(100,100), position=(4, 1, 0), rotation=(0, 90, 0), color=(0, 0, 0, 0.9))
@@ -411,7 +411,7 @@ def update():
                 details=f"Points: {round(points, 0)}, Running at {round(move_speed * 10, 1)} mph",
                 start=start_time,
                 large_image="logo",
-                large_text="Timmy Redbull Runner"
+                large_text="Timmy Breadbull Runner"
             )
         except Exception:
             rpc_connected = False
@@ -419,7 +419,7 @@ def update():
 
     if started_animation and bg_music is None:
         mm_bg_music.stop()
-        bg_music = Audio('assets/timmyredbullrunner.wav', loop=True, autoplay=True) #dis a fire beat dont touch (might add main menu music later (done))
+        bg_music = Audio('assets/timmybreadbullrunner.wav', loop=True, autoplay=True) #dis a fire beat dont touch (might add main menu music later (done))
     elif mm_bg_music is None:
         mm_bg_music = Audio('assets/mainmenu.wav', loop=True, autoplay=True)
 
