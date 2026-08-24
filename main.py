@@ -49,8 +49,7 @@ shadows = config_file["shadows"]
 
 loadPrcFileData("", "framebuffer-multisample 1")
 loadPrcFileData("", "multisamples 4") #anti aliasing. will add an settings menu later with a toggle button
-loadPrcFileData("", "shadow-map-size 2048")
-loadPrcFileData("", "textures-power-2 none")
+loadPrcFileData("", "shadow-smoothing 1")
 
 app = Ursina()
 player = Entity(model='assets/farmer.obj', texture='lambert1_albedo', scale=(0.6), position=(0, 0, 1), shader=lit_with_shadows_shader) #his name is timmy, and he likes breadbull
@@ -75,9 +74,9 @@ thesun = DirectionalLight(position=(10, 2, 3), shadows=shadows, rotation=(90, 0,
 points_counter = Text(text='Points: 0', position=(-0.87, 0.475), scale=1.5)
 multi_counter = Text(text='X1', position=(-0.87, 0.44), scale=1)
 
-ranking = Entity(model='quad', texture='D.png', scale=(2.5, 1.25), position=(-5.7, 7.5, -1))
-ranking_bg = Entity(model='quad', scale=(2.5, 3.4), position=(-6, 6.3, 0), color=(0, 0, 0, 0.4))
-ranking_bar = Entity(model='quad', scale=(2.3, 0.20), position=(-5.7, 6.95, -1))
+ranking = Entity(model='quad', texture='D.png', scale=(2.5, 1.25), position=(-5.7, 7.5, -1), unlit=True)
+ranking_bg = Entity(model='quad', scale=(2.5, 3.4), position=(-6, 6.3, 0), color=(0, 0, 0, 0.4), unlit=True)
+ranking_bar = Entity(model='quad', scale=(2.3, 0.20), position=(-5.7, 6.95, -1), unlit=True)
 
 font_path = 'assets/textures/ranking/vcr.ttf' #bros trynna be retro. retroslop (i googled ultrakill font and clicked the top result. VCR OSD Mono)
 Text.default_font=font_path
