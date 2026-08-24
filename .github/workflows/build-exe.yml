@@ -29,7 +29,7 @@ jobs:
 
     - name: Build with PyInstaller (Folder Mode)
       run: |
-        pyinstaller --onedir --windowed --collect-all panda3d --collect-data ursina --add-data "data.json;." --add-data "assets;assets" main.py
+        pyinstaller --onedir --windowed --collect-all panda3d --collect-data ursina --add-data "data.json;." --add-data "config.json;." --add-data "assets;assets" main.py
 
     - name: Zip the Build Folder
       run: |
