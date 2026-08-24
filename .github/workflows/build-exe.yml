@@ -39,6 +39,8 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         files: TimmyRedbullRunner-Windows.zip
+        name: "${{ github.ref_name }}-alpha"
+        prerelease: true
         generate_release_notes: true
 
     - name: Send Discord Notification
@@ -47,7 +49,7 @@ jobs:
         DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
       run: |
         $body = @{
-            content = "A new build for **${{ github.ref_name }}** has been released!`nDownload it here: https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}"
+            content = "A new alpha build for **${{ github.ref_name }}-alpha** has been released!`nDownload it here: https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}"
         } | ConvertTo-Json
         
         Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK -Method Post -Body $body -ContentType 'application/json'
