@@ -49,6 +49,8 @@ shadows = config_file["shadows"]
 
 loadPrcFileData("", "framebuffer-multisample 1")
 loadPrcFileData("", "multisamples 4") #anti aliasing. will add an settings menu later with a toggle button
+loadPrcFileData("", "shadow-map-size 2048")
+loadPrcFileData("", "textures-power-2 none")
 
 app = Ursina()
 player = Entity(model='assets/farmer.obj', texture='lambert1_albedo', scale=(0.6), position=(0, 0, 1), shader=lit_with_shadows_shader) #his name is timmy, and he likes breadbull
@@ -68,7 +70,7 @@ obstacle3 = Entity(model='assets/school bus.obj', texture='busdiffuse.png', posi
 speedcamera = Entity(model='assets/SpeedCam.obj', texture='SpeedCam.png', position=(6, 0, 30), rotation=(0, -90, 0), shader=lit_with_shadows_shader) #will affect ur ranking later (done)
 #where is freddy fazbear
 
-thesun = DirectionalLight(position=(10, 2, 3), shadows=shadows, rotation=(10, -45, 45), color=Vec4(0.5, 0.5, 0.5, 1))
+thesun = DirectionalLight(position=(10, 2, 3), shadows=shadows, rotation=(10, -45, 45), color=Vec4(1, 1, 1, 1))
 
 points_counter = Text(text='Points: 0', position=(-0.87, 0.475), scale=1.5)
 multi_counter = Text(text='X1', position=(-0.87, 0.44), scale=1)
