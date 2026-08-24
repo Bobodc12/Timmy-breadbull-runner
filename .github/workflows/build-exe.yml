@@ -30,7 +30,6 @@ jobs:
     - name: Build with PyInstaller (Folder Mode)
       run: |
         pyinstaller --onedir --windowed --collect-all panda3d --collect-data ursina --add-data "data.json;." --add-data "assets;assets" main.py
-        # Changed --onefile to --onedir so it outputs a folder with all dependencies and assets intact
 
     - name: Zip the Build Folder
       run: |
@@ -41,3 +40,10 @@ jobs:
       with:
         files: TimmyRedbullRunner-Windows.zip
         generate_release_notes: true
+
+    - name: Send Discord Notification
+      uses: Ilshidur/action-discord@master
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      with:
+        args: "A new build for **${{ github.ref_name }}** has been released!\nDownload it here: https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}"
