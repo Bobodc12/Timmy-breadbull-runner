@@ -42,8 +42,12 @@ jobs:
         generate_release_notes: true
 
     - name: Send Discord Notification
-      uses: Ilshidur/action-discord@master
+      shell: pwsh
       env:
         DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
-      with:
-        args: "A new build for **${{ github.ref_name }}** has been released!\nDownload it here: https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}"
+      run: |
+        $body = @{
+            content = "A new build for **${{ github.ref_name }}** has been released!`nDownload it here: https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}"
+        } | ConvertTo-Json
+        
+        Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK -Method Post -Body $body -ContentType 'application/json'
