@@ -37,8 +37,9 @@ with open(resource_path("data.json"), "r") as file:
         string_list = data.get("messages", []) #i swear these are goated
 
 app = Ursina()
-player = Entity(model='assets/farmer.obj', texture='lambert1_albedo', scale=(0.5), position=(0, 1, 0), collider='box') #his name is timmy, and he likes redbull. copyright? never heard of it (if i ever release it, im changing redbull to breadbull)
+player = Entity(model='assets/farmer.obj', texture='lambert1_albedo', scale=(0.5), position=(0, 1, 0)) #his name is timmy, and he likes redbull. copyright? never heard of it (if i ever release it, im changing redbull to breadbull)
 idle_player = FrameAnimation3d('assets/farmer/idle/farmer', texture='lambert1_albedo', scale=(0.5), position=(0, 1, 0), fps=5) #10 frame animation. peak
+player_col_cube = Entity(model='cube', color=color.red, position=(player.x, player.y, player.z), collider='box', visible=False)
 sky = Sky(texture='sky_sunset')
 ground = Entity(model='plane', texture='grass_tintable', color=Color(1, 1, 0.3, 1), scale=(50, 50, 50), texture_scale=(1, 1))
 bg_music = None
@@ -245,7 +246,7 @@ def input(key):
     elif key == "c" or key == "control" or key == 'down arrow': #dont ask why i didnt add S. im too lazy. srry WASD players
         reset_jump()
         is_crouching = True
-        player.animate_y(0.5, duration=0.1)
+        player.animate_y(1, duration=0.1)
         player.animate('rotation_x', 90, duration=0.1)
         resetcrouch = invoke(reset_crouch, delay=1 / move_speed)
 
@@ -291,6 +292,7 @@ def death_text():
 def update():
     global move_speed, last_rpc_update, points, dead, is_jumping, is_crouching, bg_music, mm_bg_music, started, speedcamera_taken, car_passed, fence_passed, ranking_points, ranking_letter, ranking_decay, last_jump #why are there so many
     player.rotation_y += 50 * time.dt #dis is walking animation. dont touch (actually. touch it once u got 3 .obj files. one for each animation keyframe. cuz ursina like hates armatures)
+    player_col_cube.x = player.x
     idle_player.rotation_y += 50 * time.dt
     if is_paused and is_crouching:
         resetcrouch.pause()
@@ -351,21 +353,20 @@ def update():
         obstacle3.z -= (move_speed * time.dt) * 30
         speedcamera.z -= (move_speed * time.dt) * 30
 
-        if obstacle1.x == player.x and not godmode: 
-            if not is_jumping and player.intersects(obstacle1):
-                die()
-            elif not car_passed and obstacle1.z <= player.z and is_jumping == True:
-                car_passed = True
-                add_ranking_points(50, "+ HOOD JUMP", stackable=True)
+        if not is_jumping and player_col_cube.intersects(obstacle1) and not godmode:
+            die()
+        elif not car_passed and obstacle1.z <= player.z and is_jumping == True:
+            car_passed = True
+            add_ranking_points(50, "+ HOOD JUMP", stackable=True)
 
-        if obstacle2.x == player.x and player.intersects(obstacle2) and not godmode:
+        if player_col_cube.intersects(obstacle2) and not godmode:
             if not is_crouching:
                 die()
             elif not fence_passed:
                 fence_passed = True
                 add_ranking_points(50, "+ SLIDE", stackable=True)
 
-        if obstacle3.x == player.x and player.intersects(obstacle3) and not godmode: #no way u jumping over this
+        if player_col_cube.intersects(obstacle3) and not godmode: #no way u jumping over this
             die() #yeah thats what i thought, u really tryna jump over a school bus?
             #congrats school bus, ur the only obstacle without a ranking text
 
