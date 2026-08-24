@@ -8,6 +8,8 @@ from collections import Counter
 import json
 import sys
 import os
+from panda3d.core import loadPrcFileData
+from ursina.shaders import lit_with_shadows_shader
 
 client_id = '1535037932828889178' #for discord rpc
 
@@ -21,6 +23,7 @@ try:
 except Exception as e:
     print("launching game without discord RPC") #cuz i will prob play this game on my school laptop in the future
 
+
 def resource_path(relative_path):
     try:
         base_path = sys._MEIPASS
@@ -32,27 +35,40 @@ start_time = time.time()
 last_rpc_update = 0
 update_interval = 15 #to avoid rate limiting
 
+config_file = {}
+
 with open(resource_path("data.json"), "r") as file:
         data = json.load(file)
         string_list = data.get("messages", []) #i swear these are goated
 
+with open(resource_path("config.json"), "r") as file:
+    config_file = json.load(file)
+
+antialiasing = config_file["antialiasing"]
+shadows = config_file["shadows"]
+
+loadPrcFileData("", "framebuffer-multisample 1")
+loadPrcFileData("", "multisamples 4") #anti aliasing. will add an settings menu later with a toggle button
+
 app = Ursina()
-player = Entity(model='assets/farmer.obj', texture='lambert1_albedo', scale=(0.5), position=(0, 1, 0)) #his name is timmy, and he likes breadbull
-idle_player = FrameAnimation3d('assets/farmer/idle/farmer', texture='lambert1_albedo', scale=(0.5), position=(0, 1, 0), fps=5) #10 frame animation. peak
+player = Entity(model='assets/farmer.obj', texture='lambert1_albedo', scale=(0.6), position=(0, 0, 1), shader=lit_with_shadows_shader) #his name is timmy, and he likes breadbull
+idle_player = FrameAnimation3d('assets/farmer/idle/farmer', texture='lambert1_albedo', scale=(0.5), position=(0, 1, 0), fps=5, shader=lit_with_shadows_shader) #10 frame animation. peak
 player_col_cube = Entity(model='cube', color=color.red, position=(player.x, player.y, player.z), collider='box', visible=False)
 sky = Sky(texture='sky_sunset')
-ground = Entity(model='plane', texture='grass_tintable', color=Color(1, 1, 0.3, 1), scale=(50, 50, 50), texture_scale=(1, 1))
+ground = Entity(model='plane', texture='grass_tintable', color=Color(0.5, 0.5, 0.15, 1), scale=(50, 50, 50), texture_scale=(1, 1), shader=lit_with_shadows_shader)
 bg_music = None
 mm_bg_music = None
 
-hedgeL = Entity(model='cube', texture='grass', scale=(1, 3, 50), position=(-5, 0, 0)) #hedges? in the desert?
-hedgeR = Entity(model='cube', texture='grass', scale=(1, 3, 50), position=(5, 0, 0))
+hedgeL = Entity(model='cube', texture='grass', scale=(1, 3, 50), position=(-5, 0, 0), shader=lit_with_shadows_shader) #hedges? in the desert?
+hedgeR = Entity(model='cube', texture='grass', scale=(1, 3, 50), position=(5, 0, 0), shader=lit_with_shadows_shader)
 
-obstacle1 = Entity(model='assets/pol.obj', texture="2015_Ranger_Pol_d", position=(3, 1, 50), scale=(1.5), rotation=(0, 180, 0), collider='box') #u can jump over
-obstacle2 = Entity(model='assets/fence.obj', position=(-3, 1, 10), scale=(0.15), rotation=(0, 180, 0), color=color.dark_gray, collider='box') #u can crouch under
-obstacle3 = Entity(model='assets/school bus.obj', texture='busdiffuse.png', position=(0, 1, 20), scale=(3), rotation=(0, 180, 0), collider='box') #whole ass school bus
-speedcamera = Entity(model='assets/SpeedCam.obj', texture='SpeedCam.png', position=(6, 0, 30), rotation=(0, -90, 0)) #will affect ur ranking later (done)
+obstacle1 = Entity(model='assets/pol.obj', texture="2015_Ranger_Pol_d", position=(3, 1.5, 50), scale=(1.75), rotation=(0, 180, 0), collider='box', shader=lit_with_shadows_shader) #u can jump over
+obstacle2 = Entity(model='assets/fence.obj', position=(-3, 0.3, 10), scale=(0.15), rotation=(0, 180, 0), color=color.dark_gray, collider='box', shader=lit_with_shadows_shader) #u can crouch under
+obstacle3 = Entity(model='assets/school bus.obj', texture='busdiffuse.png', position=(0, 0, 20), scale=(3.5), rotation=(0, 180, 0), collider='box', shader=lit_with_shadows_shader) #whole ass school bus
+speedcamera = Entity(model='assets/SpeedCam.obj', texture='SpeedCam.png', position=(6, 0, 30), rotation=(0, -90, 0), shader=lit_with_shadows_shader) #will affect ur ranking later (done)
 #where is freddy fazbear
+
+thesun = DirectionalLight(position=(10, 2, 3), shadows=shadows, rotation=(10, -45, 45), color=(0.5, 0.5, 0.5))
 
 points_counter = Text(text='Points: 0', position=(-0.87, 0.475), scale=1.5)
 multi_counter = Text(text='X1', position=(-0.87, 0.44), scale=1)
@@ -62,11 +78,29 @@ ranking_bg = Entity(model='quad', scale=(2.5, 3.4), position=(-6, 6.3, 0), color
 ranking_bar = Entity(model='quad', scale=(2.3, 0.20), position=(-5.7, 6.95, -1))
 
 font_path = 'assets/textures/ranking/vcr.ttf' #bros trynna be retro. retroslop (i googled ultrakill font and clicked the top result. VCR OSD Mono)
+Text.default_font=font_path
 
 pause_title = Text(text='TIMMY BREADBULL RUNNER', position=(-0.8, 0.1), scale=2, font=font_path, color=color.red)
 pause_guide = Text(text='Press space to start', position=(-0.8, -0.1), scale=1.75, font=font_path, color=color.white)
+pause_sett = Text(text='Press enter to change settings', position=(-0.8, -0.2), scale=1.75, font=font_path, color=color.white)
 pause_splash = Text(text=random.choice(string_list), position=(-0.45, 0.03, -0.1), scale=1, font=font_path, color=color.yellow, rotation=(0, 0, -15)) #as i said, these are goated
 pause_bg = Entity(model='quad', scale=(100,100), position=(4, 1, 0), rotation=(0, 90, 0), color=(0, 0, 0, 0.9))
+
+def toggle_aa():
+    global antialiasing
+    antialiasing = not antialiasing
+    settings_aa.text=f'anti aliasing (4x)\ncurrently set to:\n{antialiasing}'
+def toggle_shadows():
+    global shadows
+    shadows = not shadows
+    thesun.shadows = shadows
+    settings_shadow.text=f'shadows\ncurrently set to:\n{shadows}'
+
+settings_aa = Button(text=f'anti aliasing (4x)\ncurrently set to:\n{antialiasing}', scale=(0.3, 0.1), on_click=toggle_aa, position=(0.6, 0.3), alpha=0, collision=False)
+settings_shadow = Button(text=f'shadows\ncurrently set to:\n{shadows}', scale=(0.3, 0.1), on_click=toggle_shadows, position=(0.6, 0.19), alpha=0, collision=False)
+settings_aa.text_entity.alpha=0
+settings_shadow.text_entity.alpha=0
+
 
 player.visible = False
 idle_player.visible = True
@@ -170,6 +204,7 @@ window.borderless = False
 dead = False
 godmode = False #ooo you like cheating dont you?
 started = False
+settings_open = False
 is_paused = False
 started_animation = False
 
@@ -207,10 +242,14 @@ def input(key):
         pause_title.fade_out(duration=0.2)
         pause_splash.fade_out(duration=0.2)
         pause_guide.fade_out(duration=0.2)
+        pause_sett.fade_out(duration=0.2)
 
         player.visible = True
         idle_player.visible = False
         invoke(start_game, delay=3) #gives the player some time to observe their surroundings
+
+    elif key == 'enter' and not started and not started_animation:
+        settings()
     elif key == 'escape':
         is_paused = not is_paused
 
@@ -229,24 +268,25 @@ def input(key):
         if current_lane > -1:
             current_lane -= 1
     elif key == 'space' or key == 'w' or key == 'up arrow':
-        if not is_jumping and player.y == 1 or player.y == 0.5: #patches flight. with good enough skills, u could skip most of the game using these glitches
-            if is_crouching:
-                reset_crouch()
-                resetcrouch.kill()
-            if last_jump <= 0.5:
+        if -0.1 < player.y < 0.26 and not is_jumping: #patches flight. with good enough skills, u could skip most of the game using these glitches
+            if last_jump <= 0.5 and not is_crouching:
                 bhop_count += 1
                 if bhop_count >= 3:
                     add_ranking_points(50, f"+ BHOP (X{bhop_count})", stackable=False)
             else:
                 bhop_count = 0
+
+            if is_crouching:
+                reset_crouch()
+                resetcrouch.kill()
             is_jumping = True
-            player.animate_y(player.y + 2, duration=0.3 / move_speed, curve=curve.out_sine)
+            player.animate_y(4, duration=0.3 / move_speed, curve=curve.out_sine)
             player.animate('rotation_x', 0, duration=0.3 / move_speed, curve=curve.out_sine)
             falldown = invoke(fall_down, delay=0.3 / move_speed)
     elif key == "c" or key == "control" or key == 'down arrow': #dont ask why i didnt add S. im too lazy. srry WASD players
         reset_jump()
         is_crouching = True
-        player.animate_y(1, duration=0.1)
+        player.animate_y(0.25, duration=0.1)
         player.animate('rotation_x', 90, duration=0.1)
         resetcrouch = invoke(reset_crouch, delay=1 / move_speed)
 
@@ -257,7 +297,7 @@ def fall_down(): #if it works, dont touch it (it applies for fall_down and reset
     global is_jumping
     if is_paused:
         return
-    player.animate_y(1, duration=0.3 / move_speed, curve=curve.in_sine)
+    player.animate_y(0, duration=0.3 / move_speed, curve=curve.in_sine)
     invoke(reset_jump, delay=0.3 / move_speed)
 
 def reset_jump():
@@ -268,8 +308,40 @@ def reset_crouch():
     global is_crouching
     is_crouching = False
     if not is_jumping:
-        player.animate_y(1, duration=0.1)
+        player.animate_y(0, duration=0.1)
         player.animate('rotation_x', 0, duration=0.1)
+
+def settings():
+    global settings_open
+    if settings_open == True:
+        settings_open = False
+        settings_to_save = {"antialiasing": antialiasing, "shadows": shadows}
+        with open(resource_path("config.json"), "w") as file:
+            json.dump(settings_to_save, file, indent=4)
+        camera.animate_z(0, duration=1, curve=curve.out_sine)
+        pause_title.fade_in(duration=1, curve=curve.out_sine)
+        pause_splash.fade_in(duration=1, curve=curve.out_sine)
+        pause_guide.fade_in(duration=1, curve=curve.out_sine)
+        settings_aa.fade_out(duration=1, curve=curve.out_sine)
+        settings_aa.text_entity.fade_out(duration=1, curve=curve.out_sine)
+        settings_shadow.fade_out(duration=1, curve=curve.out_sine)
+        settings_shadow.text_entity.fade_out(duration=1, curve=curve.out_sine)
+        settings_aa.collision=False
+        settings_shadow.collision=False
+        pause_sett.text = "Press enter to change settings"
+    else:
+        settings_open = True
+        camera.animate_z(-1.5, duration=1, curve=curve.out_sine)
+        pause_title.fade_out(duration=1, curve=curve.out_sine)
+        pause_splash.fade_out(duration=1, curve=curve.out_sine)
+        pause_guide.fade_out(duration=1, curve=curve.out_sine)
+        settings_aa.fade_in(duration=1, curve=curve.out_sine)
+        settings_aa.text_entity.fade_in(duration=1, curve=curve.out_sine)
+        settings_shadow.fade_in(duration=1, curve=curve.out_sine)
+        settings_shadow.text_entity.fade_in(duration=1, curve=curve.out_sine)
+        settings_aa.collision=True
+        settings_shadow.collision=True
+        pause_sett.text = "Press enter to save settings and return to main menu"
 
 def start_game():
     global started
@@ -278,7 +350,7 @@ def start_game():
 def die():
     global dead
     dead = True
-    player.animate_y(0.5, duration=0.1)
+    player.animate_y(0.0, duration=0.1)
     player.animate('rotation_x', 90, duration=0.1)
     pause_bg.fade_in(duration=3, curve=curve.linear)
     invoke(death_text, delay=2)
@@ -355,7 +427,7 @@ def update():
 
         if not is_jumping and player_col_cube.intersects(obstacle1) and not godmode:
             die()
-        elif not car_passed and obstacle1.z <= player.z and is_jumping == True:
+        elif not car_passed and obstacle1.z <= player.z and is_jumping == True and player_col_cube.x == obstacle1.x:
             car_passed = True
             add_ranking_points(50, "+ HOOD JUMP", stackable=True)
 
@@ -400,6 +472,7 @@ def update():
             last_jump = 0
         else:
             last_jump += time.dt
+
 
         points_counter.text = f'Points: {round(points, 0)}'
         multi_counter.text = f'X{multiplier}'
