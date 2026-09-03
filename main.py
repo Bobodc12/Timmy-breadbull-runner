@@ -1,3 +1,5 @@
+from ensurepip import version
+
 from panda3d.core import loadPrcFileData
 loadPrcFileData('', 'shadow-depth-bits 24')
 loadPrcFileData('', 'shadow-depth-bits 24')
@@ -13,6 +15,8 @@ import json
 import sys
 import os
 from ursina.shaders import lit_with_shadows_shader
+
+VERSION = "v1.2.1-alpha"
 
 client_id = '1535037932828889178' #for discord rpc
 
@@ -54,7 +58,7 @@ loadPrcFileData('', 'framebuffer-multisample 1')
 loadPrcFileData('', 'multisamples 4')
 loadPrcFileData('', 'shadow-bias 0.01')
 
-app = Ursina()
+app = Ursina(development_mode=False, vsync=True)
 player = Entity(model='assets/farmer.obj', texture='lambert1_albedo', scale=(0.6), position=(0, 0, 1), shader=lit_with_shadows_shader) #his name is timmy, and he likes breadbull
 idle_player = FrameAnimation3d('assets/farmer/idle/farmer', texture='lambert1_albedo', scale=(0.5), position=(0, 1, 0), fps=5, shader=lit_with_shadows_shader) #10 frame animation. peak
 player_col_cube = Entity(model='cube', color=color.red, position=(player.x, player.y, player.z), collider='box', visible=False)
@@ -76,8 +80,7 @@ thesun = DirectionalLight(position=(10, 2, 3), shadows=shadows, rotation=(90, 0,
 if shadows:
     thesun.shadow_map_resolution = Vec2(2048, 2048)
 
-points_counter = Text(text='Points: 0', position=(-0.87, 0.475), scale=1.5)
-multi_counter = Text(text='X1', position=(-0.87, 0.44), scale=1)
+
 
 ranking = Entity(model='quad', texture='D.png', scale=(2.5, 1.25), position=(-5.7, 7.5, -1), unlit=True)
 ranking_bg = Entity(model='quad', scale=(2.5, 3.4), position=(-6, 6.3, 0), color=(0, 0, 0, 0.4), unlit=True)
@@ -85,6 +88,11 @@ ranking_bar = Entity(model='quad', scale=(2.3, 0.20), position=(-5.7, 6.95, -1),
 
 font_path = 'assets/textures/ranking/vcr.ttf' #bros trynna be retro. retroslop (i googled ultrakill font and clicked the top result. VCR OSD Mono)
 Text.default_font=font_path
+
+fps_count = Text(text='FPS=60', position=(0.9, 0.5), origin=(0.5, 0.5), font=font_path)
+
+points_counter = Text(text='Points: 0', position=(-0.87, 0.475), scale=1, font=font_path)
+multi_counter = Text(text=' ', position=(-0.87, 0.44), scale=1)
 
 pause_title = Text(text='TIMMY BREADBULL RUNNER', position=(-0.8, 0.1), scale=2, font=font_path, color=color.red)
 pause_guide = Text(text='Press space to start', position=(-0.8, -0.1), scale=1.75, font=font_path, color=color.white)
@@ -155,8 +163,9 @@ def update_text_display():
             text_rows[i].text = ''
 
 def add_ranking_points(points_to_add, message=None, stackable=True):
-    global ranking_points
+    global ranking_points, points
     ranking_points += points_to_add
+    points += points_to_add
     if message:
         base_msg = message.split(" [x")[0].split(" (")[0]
         
@@ -227,6 +236,12 @@ is_jumping = False
 is_crouching = False
 resetcrouch = None
 falldown = None
+
+def update_fps():
+    fps = int(1 / time.dt) if time.dt > 0 else 0
+    fps_count.text = f'FPS={fps}'
+    invoke(update_fps, delay=1)
+update_fps()
 
 def input(key):
     global current_lane, started
@@ -481,7 +496,7 @@ def update():
 
 
         points_counter.text = f'Points: {round(points, 0)}'
-        multi_counter.text = f'X{multiplier}'
+        multi_counter.text = f' '
 
     if time.time() - last_rpc_update > update_interval:
         try:
@@ -490,7 +505,7 @@ def update():
                 details=f"Points: {round(points, 0)}, Running at {round(move_speed * 10, 1)} mph",
                 start=start_time,
                 large_image="logo",
-                large_text="Timmy Breadbull Runner"
+                large_text=f"Timmy Breadbull Runner {VERSION}"
             )
         except Exception:
             rpc_connected = False
