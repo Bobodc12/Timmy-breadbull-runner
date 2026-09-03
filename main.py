@@ -1,3 +1,7 @@
+from panda3d.core import loadPrcFileData
+loadPrcFileData('', 'shadow-depth-bits 24')
+loadPrcFileData('', 'shadow-depth-bits 24')
+loadPrcFileData('', 'shadow-smoothing 1')
 from ursina import *
 from direct.actor.Actor import Actor #wait why did i import this again?
 import random
@@ -8,7 +12,6 @@ from collections import Counter
 import json
 import sys
 import os
-from panda3d.core import loadPrcFileData
 from ursina.shaders import lit_with_shadows_shader
 
 client_id = '1535037932828889178' #for discord rpc
@@ -47,9 +50,9 @@ with open(resource_path("config.json"), "r") as file:
 antialiasing = config_file["antialiasing"]
 shadows = config_file["shadows"]
 
-loadPrcFileData("", "framebuffer-multisample 1")
-loadPrcFileData("", "multisamples 4") #anti aliasing. will add an settings menu later with a toggle button
-loadPrcFileData("", "shadow-smoothing 1")
+loadPrcFileData('', 'framebuffer-multisample 1')
+loadPrcFileData('', 'multisamples 4')
+loadPrcFileData('', 'shadow-bias 0.01')
 
 app = Ursina()
 player = Entity(model='assets/farmer.obj', texture='lambert1_albedo', scale=(0.6), position=(0, 0, 1), shader=lit_with_shadows_shader) #his name is timmy, and he likes breadbull
@@ -70,6 +73,8 @@ speedcamera = Entity(model='assets/SpeedCam.obj', texture='SpeedCam.png', positi
 #where is freddy fazbear
 
 thesun = DirectionalLight(position=(10, 2, 3), shadows=shadows, rotation=(90, 0, 0), color=Vec4(1, 1, 1, 1))
+if shadows:
+    thesun.shadow_map_resolution = Vec2(2048, 2048)
 
 points_counter = Text(text='Points: 0', position=(-0.87, 0.475), scale=1.5)
 multi_counter = Text(text='X1', position=(-0.87, 0.44), scale=1)
