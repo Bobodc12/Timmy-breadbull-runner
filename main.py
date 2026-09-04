@@ -95,7 +95,7 @@ ranking_bar = Entity(model='quad', scale=(2.3, 0.20), position=(-5.7, 6.95, -1),
 font_path = 'assets/textures/ranking/vcr.ttf' #bros trynna be retro. retroslop (i googled ultrakill font and clicked the top result. VCR OSD Mono)
 Text.default_font=font_path
 
-fps_count = Text(text='FPS=60', position=(0.95, 0.5), origin=(0.5, 0.5), font=font_path)
+fps_count = Text(text='FPS=60', position=(0.9, 0.5), origin=(0.5, 0.5), font=font_path)
 
 points_counter = Text(text='Points: 0', position=(-0.87, 0.475), scale=1, font=font_path)
 multi_counter = Text(text=' ', position=(-0.87, 0.44), scale=1)
@@ -105,7 +105,7 @@ pause_guide = Text(text='Press space to start', position=(-0.8, -0.1), scale=1.7
 pause_sett = Text(text='Press enter to change settings', position=(-0.8, -0.2), scale=1.75, font=font_path, color=color.white)
 pause_splash = Text(text=random.choice(string_list), position=(-0.45, 0.03, -0.1), scale=1, font=font_path, color=color.yellow, rotation=(0, 0, -15)) #as i said, these are goated
 pause_bg = Entity(model='quad', scale=(100,100), position=(4, 1, 0), rotation=(0, 90, 0), color=(0, 0, 0, 0.9))
-pause_dc = Button(texture='Discord-Symbol-Blurple.png', scale=(0.075, 0.075*0.76), z=10, color=color.white, position=(0.9, -0.45), on_click=open_discord)
+pause_dc = Button(texture='Discord-Symbol-Blurple.png', scale=(0.075, 0.075*0.76), z=10, color=color.white, position=(0.85, -0.45), on_click=open_discord)
 
 def toggle_aa():
     global antialiasing
