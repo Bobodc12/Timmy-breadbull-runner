@@ -53,10 +53,14 @@ with open(resource_path("config.json"), "r") as file:
     config_file = json.load(file)
 
 antialiasing = config_file["antialiasing"]
+pre_aa = config_file["antialiasing"]
+antialiasing_changed = False
 shadows = config_file["shadows"]
 
-loadPrcFileData('', 'framebuffer-multisample 1')
-loadPrcFileData('', 'multisamples 4')
+if antialiasing == "true":
+    loadPrcFileData('', 'framebuffer-multisample 1')
+    loadPrcFileData('', 'multisamples 4')
+
 loadPrcFileData('', 'shadow-bias 0.01')
 
 def open_discord():
@@ -117,6 +121,7 @@ settings_aa = Button(text=f'anti aliasing (4x)\ncurrently set to:\n{antialiasing
 settings_shadow = Button(text=f'shadows\ncurrently set to:\n{shadows}', scale=(0.3, 0.1), on_click=toggle_shadows, position=(0.6, 0.19), alpha=0, collision=False)
 settings_aa.text_entity.alpha=0
 settings_shadow.text_entity.alpha=0
+settings_warning = Text(text=' ', color=color.yellow, position=(0.40, 0.42))
 
 
 player.visible = False
@@ -400,6 +405,11 @@ def update():
         falldown.pause()
     elif not is_paused and is_jumping:
         falldown.resume()
+
+    if antialiasing != pre_aa and not started:
+        settings_warning.text = 'one or more settings require a  \ngame restart to take effect\n(remember to save before restarting)'
+    else:
+        settings_warning.text = ''
 
     if not dead and started and not is_paused:
         # Ranking tier calculations (optimized to run once per frame smoothly)
