@@ -121,7 +121,7 @@ settings_aa = Button(text=f'anti aliasing (4x)\ncurrently set to:\n{antialiasing
 settings_shadow = Button(text=f'shadows\ncurrently set to:\n{shadows}', scale=(0.3, 0.1), on_click=toggle_shadows, position=(0.6, 0.19), alpha=0, collision=False)
 settings_aa.text_entity.alpha=0
 settings_shadow.text_entity.alpha=0
-settings_warning = Text(text=' ', color=color.yellow, position=(0.40, 0.42))
+settings_warning = Text(text=' ', color=color.yellow, position=(0.35, 0.42))
 
 
 player.visible = False
