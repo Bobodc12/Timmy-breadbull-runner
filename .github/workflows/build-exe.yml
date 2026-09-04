@@ -49,7 +49,10 @@ jobs:
         DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
       run: |
         $body = @{
-            content = "A new alpha build for **${{ github.ref_name }}-alpha** has been released!`nDownload it here: https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}"
-        } | ConvertTo-Json
+            content = "<@&1541697144401035315> A new alpha build for **${{ github.ref_name }}-alpha** has been released!`nDownload it here: https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}"
+            allowed_mentions = @{
+                roles = @("1541697144401035315")
+            }
+        } | ConvertTo-Json -Depth 3
         
         Invoke-RestMethod -Uri $env:DISCORD_WEBHOOK -Method Post -Body $body -ContentType 'application/json'

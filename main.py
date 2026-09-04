@@ -15,6 +15,7 @@ import json
 import sys
 import os
 from ursina.shaders import lit_with_shadows_shader
+import webbrowser
 
 VERSION = "v1.2.1-alpha"
 
@@ -58,6 +59,9 @@ loadPrcFileData('', 'framebuffer-multisample 1')
 loadPrcFileData('', 'multisamples 4')
 loadPrcFileData('', 'shadow-bias 0.01')
 
+def open_discord():
+    webbrowser.open('https://discord.gg/DAVM6RSJ23')
+
 app = Ursina(development_mode=False, vsync=True)
 player = Entity(model='assets/farmer.obj', texture='lambert1_albedo', scale=(0.6), position=(0, 0, 1), shader=lit_with_shadows_shader) #his name is timmy, and he likes breadbull
 idle_player = FrameAnimation3d('assets/farmer/idle/farmer', texture='lambert1_albedo', scale=(0.5), position=(0, 1, 0), fps=5, shader=lit_with_shadows_shader) #10 frame animation. peak
@@ -80,8 +84,6 @@ thesun = DirectionalLight(position=(10, 2, 3), shadows=shadows, rotation=(90, 0,
 if shadows:
     thesun.shadow_map_resolution = Vec2(2048, 2048)
 
-
-
 ranking = Entity(model='quad', texture='D.png', scale=(2.5, 1.25), position=(-5.7, 7.5, -1), unlit=True)
 ranking_bg = Entity(model='quad', scale=(2.5, 3.4), position=(-6, 6.3, 0), color=(0, 0, 0, 0.4), unlit=True)
 ranking_bar = Entity(model='quad', scale=(2.3, 0.20), position=(-5.7, 6.95, -1), unlit=True)
@@ -89,7 +91,7 @@ ranking_bar = Entity(model='quad', scale=(2.3, 0.20), position=(-5.7, 6.95, -1),
 font_path = 'assets/textures/ranking/vcr.ttf' #bros trynna be retro. retroslop (i googled ultrakill font and clicked the top result. VCR OSD Mono)
 Text.default_font=font_path
 
-fps_count = Text(text='FPS=60', position=(0.9, 0.5), origin=(0.5, 0.5), font=font_path)
+fps_count = Text(text='FPS=60', position=(0.95, 0.5), origin=(0.5, 0.5), font=font_path)
 
 points_counter = Text(text='Points: 0', position=(-0.87, 0.475), scale=1, font=font_path)
 multi_counter = Text(text=' ', position=(-0.87, 0.44), scale=1)
@@ -99,6 +101,7 @@ pause_guide = Text(text='Press space to start', position=(-0.8, -0.1), scale=1.7
 pause_sett = Text(text='Press enter to change settings', position=(-0.8, -0.2), scale=1.75, font=font_path, color=color.white)
 pause_splash = Text(text=random.choice(string_list), position=(-0.45, 0.03, -0.1), scale=1, font=font_path, color=color.yellow, rotation=(0, 0, -15)) #as i said, these are goated
 pause_bg = Entity(model='quad', scale=(100,100), position=(4, 1, 0), rotation=(0, 90, 0), color=(0, 0, 0, 0.9))
+pause_dc = Button(texture='Discord-Symbol-Blurple.png', scale=(0.075, 0.075*0.76), z=10, color=color.white, position=(0.9, -0.45), on_click=open_discord)
 
 def toggle_aa():
     global antialiasing
@@ -264,6 +267,7 @@ def input(key):
         pause_splash.fade_out(duration=0.2)
         pause_guide.fade_out(duration=0.2)
         pause_sett.fade_out(duration=0.2)
+        pause_dc.fade_out(duration=0.2)
 
         player.visible = True
         idle_player.visible = False
