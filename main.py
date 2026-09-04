@@ -17,7 +17,7 @@ import os
 from ursina.shaders import lit_with_shadows_shader
 import webbrowser
 
-VERSION = "v1.2.1-alpha"
+VERSION = "v1.3-alpha"
 
 client_id = '1535037932828889178' #for discord rpc
 
