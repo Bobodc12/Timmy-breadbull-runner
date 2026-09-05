@@ -17,7 +17,7 @@ import os
 from ursina.shaders import lit_with_shadows_shader
 import webbrowser
 
-VERSION = "v1.3-alpha"
+VERSION = "v1.3.2-alpha"
 
 client_id = '1535037932828889178' #for discord rpc
 
@@ -103,9 +103,10 @@ multi_counter = Text(text=' ', position=(-0.87, 0.44), scale=1)
 pause_title = Text(text='TIMMY BREADBULL RUNNER', position=(-0.8, 0.1), scale=2, font=font_path, color=color.red)
 pause_guide = Text(text='Press space to start', position=(-0.8, -0.1), scale=1.75, font=font_path, color=color.white)
 pause_sett = Text(text='Press enter to change settings', position=(-0.8, -0.2), scale=1.75, font=font_path, color=color.white)
-pause_splash = Text(text=random.choice(string_list), position=(-0.45, 0.03, -0.1), scale=1, font=font_path, color=color.yellow, rotation=(0, 0, -15)) #as i said, these are goated
+pause_splash = Text(text=random.choice(string_list), position=(0.325, -0.02, -0), scale=0.5, font=font_path, color=color.yellow, rotation=(0, 0, -15), parent=pause_title, origin=(0, 0, 0)) #as i said, these are goated
 pause_bg = Entity(model='quad', scale=(100,100), position=(4, 1, 0), rotation=(0, 90, 0), color=(0, 0, 0, 0.9))
 pause_dc = Button(texture='Discord-Symbol-Blurple.png', scale=(0.075, 0.075*0.76), z=10, color=color.white, position=(0.85, -0.45), on_click=open_discord)
+pause_ver = Text(text=VERSION, position=(-0.9, -0.475))
 
 def toggle_aa():
     global antialiasing
@@ -273,6 +274,7 @@ def input(key):
         pause_guide.fade_out(duration=0.2)
         pause_sett.fade_out(duration=0.2)
         pause_dc.fade_out(duration=0.2)
+        pause_ver.fade_out(duration=0.2)
 
         player.visible = True
         idle_player.visible = False
@@ -344,6 +346,7 @@ def reset_crouch():
 def settings():
     global settings_open
     if settings_open == True:
+        pause_splash.text=random.choice(string_list)
         settings_open = False
         settings_to_save = {"antialiasing": antialiasing, "shadows": shadows}
         with open(resource_path("config.json"), "w") as file:
