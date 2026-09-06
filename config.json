@@ -1,4 +1,5 @@
 {
     "antialiasing": true,
-    "shadows": true
+    "shadows": true,
+    "lang": "en"
 }

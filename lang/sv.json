@@ -1,0 +1,10 @@
+{
+    "start_tip": "Tryck mellanslag för att starta",
+    "settings_tip": "Tryck enter för inställningar",
+    "exit_settings_tip": "Tryck enter för att spara och gå till huvudmenyn",
+    "settings_restart_warning": "en eller flera inställningar kräver att\nspelet startas om\n(kom ihåg att spara innan du startar om)",
+    "anti_aliasing": "kantutjämning (4x)\nsatt till:\n{value}",
+    "shadows": "skuggor\nsatt till:\n{value}",
+    "points_label": "poäng: ",
+    "death_message": "DU DOG\nrespawning är inte tillagt än. starta om spelet"
+}

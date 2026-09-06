@@ -1,0 +1,14 @@
+{
+    "start_tip": "Press space to start",
+    "settings_tip": "Press enter to change settings",
+    "exit_settings_tip": "Press enter to save settings and return to main menu",
+    "settings_restart_warning": "one or more settings require a\ngame restart to take effect\n(remember to save before restarting)",
+    "anti_aliasing": "anti aliasing (4x)\ncurrently set to:\n{value}",
+    "shadows": "shadows\ncurrently set to:\n{value}",
+    "points_label": "Points: {points}",
+    "death_message": "YOU DIED\nrespawning isnt implemented btw. restart the game",
+    "rank_hood_jump": "+ HOOD JUMP",
+    "rank_slide": "+ SLIDE",
+    "rank_bhop": "+ BHOP (X{count})",
+    "rank_swoosh": "+ SWOOSH ({speed}MPH)"
+}

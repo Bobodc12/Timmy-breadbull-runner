@@ -16,6 +16,7 @@ import sys
 import os
 from ursina.shaders import lit_with_shadows_shader
 import webbrowser
+from babel import Locale
 
 VERSION = "v1.3.2-alpha"
 
@@ -48,6 +49,7 @@ config_file = {}
 with open(resource_path("data.json"), "r") as file:
         data = json.load(file)
         string_list = data.get("messages", []) #i swear these are goated
+        avail_lang = data.get("avail_lang", [])
 
 with open(resource_path("config.json"), "r") as file:
     config_file = json.load(file)
@@ -56,6 +58,18 @@ antialiasing = config_file["antialiasing"]
 pre_aa = config_file["antialiasing"]
 antialiasing_changed = False
 shadows = config_file["shadows"]
+
+locale = Locale('en')
+lang_code = config_file["lang"]
+lang_name = locale.languages[lang_code]
+if lang_code in avail_lang:
+    lang_index = avail_lang.index(lang_code)
+    pre_lang_index = lang_index
+    #print(lang_index)
+else:
+    print("==============\n\n\ncritical error with language stuff\n\n\n==================")
+with open(resource_path(f"lang/{lang_code}.json"), "r") as file:
+    lang = json.load(file)
 
 if antialiasing == "true":
     loadPrcFileData('', 'framebuffer-multisample 1')
@@ -101,8 +115,8 @@ points_counter = Text(text='Points: 0', position=(-0.87, 0.475), scale=1, font=f
 multi_counter = Text(text=' ', position=(-0.87, 0.44), scale=1)
 
 pause_title = Text(text='TIMMY BREADBULL RUNNER', position=(-0.8, 0.1), scale=2, font=font_path, color=color.red)
-pause_guide = Text(text='Press space to start', position=(-0.8, -0.1), scale=1.75, font=font_path, color=color.white)
-pause_sett = Text(text='Press enter to change settings', position=(-0.8, -0.2), scale=1.75, font=font_path, color=color.white)
+pause_guide = Text(text=lang["start_tip"], position=(-0.8, -0.1), scale=1.75, font=font_path, color=color.white)
+pause_sett = Text(text=lang["settings_tip"], position=(-0.8, -0.2), scale=1.75, font=font_path, color=color.white)
 pause_splash = Text(text=random.choice(string_list), position=(0.325, -0.02, -0.1), scale=0.5, font=font_path, color=color.yellow, rotation=(0, 0, -15), parent=pause_title, origin=(0, 0, 0)) #as i said, these are goated
 pause_bg = Entity(model='quad', scale=(100,100), position=(4, 1, 0), rotation=(0, 90, 0), color=(0, 0, 0, 0.9))
 pause_dc = Button(texture='Discord-Symbol-Blurple.png', scale=(0.075, 0.075*0.76), z=10, color=color.white, position=(0.85, -0.45), on_click=open_discord)
@@ -111,17 +125,25 @@ pause_ver = Text(text=VERSION, position=(-0.9, -0.475))
 def toggle_aa():
     global antialiasing
     antialiasing = not antialiasing
-    settings_aa.text=f'anti aliasing (4x)\ncurrently set to:\n{antialiasing}'
+    settings_aa.text = lang["anti_aliasing"].format(value=antialiasing)
 def toggle_shadows():
     global shadows
     shadows = not shadows
     thesun.shadows = shadows
-    settings_shadow.text=f'shadows\ncurrently set to:\n{shadows}'
+    settings_shadow.text = lang["shadows"].format(value=shadows)
+def change_lang():
+    global lang_index, lang_code, lang_name
+    lang_index = (lang_index + 1) % len(avail_lang)
+    lang_code = avail_lang[lang_index]
+    lang_name = locale.languages[lang_code]
+    settings_language.text=(f'language\ncurrently set to:\n{lang_name}')
 
-settings_aa = Button(text=f'anti aliasing (4x)\ncurrently set to:\n{antialiasing}', scale=(0.3, 0.1), on_click=toggle_aa, position=(0.6, 0.3), alpha=0, collision=False)
-settings_shadow = Button(text=f'shadows\ncurrently set to:\n{shadows}', scale=(0.3, 0.1), on_click=toggle_shadows, position=(0.6, 0.19), alpha=0, collision=False)
+settings_aa = Button(text=lang["anti_aliasing"].format(value=antialiasing), scale=(0.3, 0.1), on_click=toggle_aa, position=(0.6, 0.3), alpha=0, collision=False)
+settings_shadow = Button(text=lang["shadows"].format(value=shadows), scale=(0.3, 0.1), on_click=toggle_shadows, position=(0.6, 0.17), alpha=0, collision=False)
+settings_language = Button(text=f'language\ncurrently set to:\n{lang_name}', scale=(0.3, 0.1), on_click=change_lang, position=(0.6, 0.04), alpha=0, collision=False) #this will be hardcoded so u wont accedently set the language to one u dont know and softlock urself
 settings_aa.text_entity.alpha=0
 settings_shadow.text_entity.alpha=0
+settings_language.text_entity.alpha=0
 settings_warning = Text(text=' ', color=color.yellow, position=(0.35, 0.42))
 
 
@@ -348,7 +370,7 @@ def settings():
     if settings_open == True:
         pause_splash.text=random.choice(string_list)
         settings_open = False
-        settings_to_save = {"antialiasing": antialiasing, "shadows": shadows}
+        settings_to_save = {"antialiasing": antialiasing, "shadows": shadows, "lang": lang_code}
         with open(resource_path("config.json"), "w") as file:
             json.dump(settings_to_save, file, indent=4)
         camera.animate_z(0, duration=1, curve=curve.out_sine)
@@ -359,9 +381,12 @@ def settings():
         settings_aa.text_entity.fade_out(duration=1, curve=curve.out_sine)
         settings_shadow.fade_out(duration=1, curve=curve.out_sine)
         settings_shadow.text_entity.fade_out(duration=1, curve=curve.out_sine)
+        settings_language.fade_out(duration=1, curve=curve.out_sine)
+        settings_language.text_entity.fade_out(duration=1, curve=curve.out_sine)
         settings_aa.collision=False
         settings_shadow.collision=False
-        pause_sett.text = "Press enter to change settings"
+        settings_language.collision=False
+        pause_sett.text = lang["settings_tip"]
     else:
         settings_open = True
         camera.animate_z(-1.5, duration=1, curve=curve.out_sine)
@@ -372,9 +397,12 @@ def settings():
         settings_aa.text_entity.fade_in(duration=1, curve=curve.out_sine)
         settings_shadow.fade_in(duration=1, curve=curve.out_sine)
         settings_shadow.text_entity.fade_in(duration=1, curve=curve.out_sine)
+        settings_language.fade_in(duration=1, curve=curve.out_sine)
+        settings_language.text_entity.fade_in(duration=1, curve=curve.out_sine)
+        settings_language.collision=True
         settings_aa.collision=True
         settings_shadow.collision=True
-        pause_sett.text = "Press enter to save settings and return to main menu"
+        pause_sett.text = lang["exit_settings_tip"]
 
 def start_game():
     global started
@@ -389,7 +417,7 @@ def die():
     invoke(death_text, delay=2)
 
 def death_text():
-    pause_guide.text = "YOU DIED\nrespawning isnt implemented btw. restart the game"
+    pause_guide.text = lang["death_message"]
     pause_guide.origin = 0, 0
     pause_guide.position = 0, 0
     pause_guide.fade_in(duration=0.5, curve=curve.linear)
@@ -409,8 +437,8 @@ def update():
     elif not is_paused and is_jumping:
         falldown.resume()
 
-    if antialiasing != pre_aa and not started:
-        settings_warning.text = 'one or more settings require a  \ngame restart to take effect\n(remember to save before restarting)'
+    if antialiasing != pre_aa or lang_index != pre_lang_index and not started:
+        settings_warning.text = lang["settings_restart_warning"]
     else:
         settings_warning.text = ''
 
@@ -512,7 +540,7 @@ def update():
             last_jump += time.dt
 
 
-        points_counter.text = f'Points: {round(points, 0)}'
+        points_counter.text = lang["points_label"] + str(int(points))
         multi_counter.text = f' '
 
     if time.time() - last_rpc_update > update_interval:
