@@ -1,0 +1,10 @@
+{
+    "start_tip": "Appuyez sur espace pour commencer.",
+    "settings_tip": "Appuyez sur entrée pour modifier les paramètres.",
+    "exit_settings_tip": "Appuyez sur entrée pour enregistrer les paramètres\net revenir au menu principal.",
+    "settings_restart_warning": "Un ou plusieurs paramètres nécessitent un\nredémarrage du jeu pour être pris en compte\n(pensez à sauvegarder avant de redémarrer)",
+    "anti_aliasing": "anticrénelage (4x)\nactuellement réglé sur:\n{value}",
+    "shadows": "ombres\nactuellement réglé sur:\n{value}",
+    "points_label": "Points: ",
+    "death_message": "TU ES MORT\nla réapparition n'est pas implémentée. Relancer le jeu"
+}

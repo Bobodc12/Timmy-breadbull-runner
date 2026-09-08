@@ -5,10 +5,6 @@
     "settings_restart_warning": "one or more settings require a\ngame restart to take effect\n(remember to save before restarting)",
     "anti_aliasing": "anti aliasing (4x)\ncurrently set to:\n{value}",
     "shadows": "shadows\ncurrently set to:\n{value}",
-    "points_label": "Points: {points}",
-    "death_message": "YOU DIED\nrespawning isnt implemented btw. restart the game",
-    "rank_hood_jump": "+ HOOD JUMP",
-    "rank_slide": "+ SLIDE",
-    "rank_bhop": "+ BHOP (X{count})",
-    "rank_swoosh": "+ SWOOSH ({speed}MPH)"
+    "points_label": "Points: ",
+    "death_message": "YOU DIED\nrespawning isnt implemented btw. restart the game"
 }

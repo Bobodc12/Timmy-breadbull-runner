@@ -1,5 +1,6 @@
 from ensurepip import version
 
+# pyrefly: ignore [missing-import]
 from panda3d.core import loadPrcFileData
 loadPrcFileData('', 'shadow-depth-bits 24')
 loadPrcFileData('', 'shadow-depth-bits 24')
@@ -18,7 +19,7 @@ from ursina.shaders import lit_with_shadows_shader
 import webbrowser
 from babel import Locale
 
-VERSION = "v1.3.2-alpha"
+VERSION = "v1.4-alpha"
 
 client_id = '1535037932828889178' #for discord rpc
 
@@ -68,7 +69,7 @@ if lang_code in avail_lang:
     #print(lang_index)
 else:
     print("==============\n\n\ncritical error with language stuff\n\n\n==================")
-with open(resource_path(f"lang/{lang_code}.json"), "r") as file:
+with open(resource_path(f"lang/{lang_code}.json"), "r", encoding="utf-8") as file:
     lang = json.load(file)
 
 if antialiasing == "true":
@@ -145,6 +146,8 @@ settings_aa.text_entity.alpha=0
 settings_shadow.text_entity.alpha=0
 settings_language.text_entity.alpha=0
 settings_warning = Text(text=' ', color=color.yellow, position=(0.35, 0.42))
+if lang_code == 'fr':
+    settings_warning.x=0.30
 
 
 player.visible = False
@@ -443,7 +446,7 @@ def update():
         settings_warning.text = ''
 
     if not dead and started and not is_paused:
-        # Ranking tier calculations (optimized to run once per frame smoothly)
+        #smth i forgor
         if ranking_points < 300:
             ranking_letter = "D"
             ranking_bar.scale_x = ranking_points / 130
