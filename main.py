@@ -18,8 +18,9 @@ import os
 from ursina.shaders import lit_with_shadows_shader
 import webbrowser
 from babel import Locale
+from itertools import chain
 
-VERSION = "v1.4-alpha"
+VERSION = "v1.4.1-alpha"
 
 client_id = '1535037932828889178' #for discord rpc
 
@@ -110,7 +111,7 @@ ranking_bar = Entity(model='quad', scale=(2.3, 0.20), position=(-5.7, 6.95, -1),
 font_path = 'assets/textures/ranking/vcr.ttf' #bros trynna be retro. retroslop (i googled ultrakill font and clicked the top result. VCR OSD Mono)
 Text.default_font=font_path
 
-fps_count = Text(text='FPS=60', position=(0.9, 0.5), origin=(0.5, 0.5), font=font_path)
+fps_count = Text(text='FPS=60', position=(0.9, 0.5), origin=(0.5, 0.5), font=font_path) #60 is a placeholder, its updated instantly anyways
 
 points_counter = Text(text='Points: 0', position=(-0.87, 0.475), scale=1, font=font_path)
 multi_counter = Text(text=' ', position=(-0.87, 0.44), scale=1)
@@ -139,9 +140,17 @@ def change_lang():
     lang_name = locale.languages[lang_code]
     settings_language.text=(f'language\ncurrently set to:\n{lang_name}')
 
+setting_cat_graphics = Text(text="GRAPHICS", scale=1.5, position=(0, 0.45), origin=(0, 0), color=color.black, alpha=0)
+setting_cat_display = Text(text="DISPLAY", scale=1.5, position=(0.3, 0.45), origin=(0, 0), color=color.black, alpha=0)
+setting_cat_audio = Text(text="AUDIO", scale=1.5, position=(0.6, 0.45), origin=(0, 0), color=color.black, alpha=0)
+
+settings_bar = Entity(model='quad', parent=setting_cat_display, color=color.dark_gray, z=1, scale=(0.6, 0.05), origin=(0, 0), alpha=0)
+settings_select = Entity(model='quad', parent=setting_cat_graphics, z=0.5, scale=(0.15, 0.05), color=color.orange, alpha=0, origin=(0, 0))
+
+
 settings_aa = Button(text=lang["anti_aliasing"].format(value=antialiasing), scale=(0.3, 0.1), on_click=toggle_aa, position=(0.6, 0.3), alpha=0, collision=False)
 settings_shadow = Button(text=lang["shadows"].format(value=shadows), scale=(0.3, 0.1), on_click=toggle_shadows, position=(0.6, 0.17), alpha=0, collision=False)
-settings_language = Button(text=f'language\ncurrently set to:\n{lang_name}', scale=(0.3, 0.1), on_click=change_lang, position=(0.6, 0.04), alpha=0, collision=False) #this will be hardcoded so u wont accedently set the language to one u dont know and softlock urself
+settings_language = Button(text=f'language\ncurrently set to:\n{lang_name}', scale=(0.3, 0.1), on_click=change_lang, position=(0.6, 0.3), alpha=0, collision=False) #this will be hardcoded so u wont accedently set the language to one u dont know and softlock urself
 settings_aa.text_entity.alpha=0
 settings_shadow.text_entity.alpha=0
 settings_language.text_entity.alpha=0
@@ -149,6 +158,9 @@ settings_warning = Text(text=' ', color=color.yellow, position=(0.35, 0.42))
 if lang_code == 'fr':
     settings_warning.x=0.30
 
+sett_graphics = [settings_aa, settings_shadow]
+sett_display = [settings_language]
+sett_audio = []
 
 player.visible = False
 idle_player.visible = True
@@ -186,7 +198,7 @@ message_duration = 5 #5 seconds is good dont touch
 for i in range(8):
     x_pos = -0.45 + (i * 0.0027)
     y_pos = 0.1 - (i * 0.060)
-    row = Text(text='', position=(x_pos, y_pos), rotation_x=15, font=font_path, parent=ranking_bg, scale=3)
+    row = Text(text='', position=(x_pos, y_pos, -0.1), rotation_x=0, font=font_path, parent=ranking_bg, scale=3)
     text_rows.append(row)
 
 def update_text_display():
@@ -277,9 +289,35 @@ def update_fps():
     invoke(update_fps, delay=1)
 update_fps()
 
+def update_settings(category):
+    if settings_open:
+        if category == 1:
+            for el in sett_graphics:
+                el.visible=True
+                el.collision=True
+            for el in chain(sett_display, sett_audio):
+                el.visible=False
+                el.collision=False
+        elif category == 2:
+            for el in sett_display:
+                el.visible=True
+                el.collision=True
+            for el in chain(sett_graphics, sett_audio):
+                el.visible=False
+                el.collision=False
+        elif category == 3:
+            for el in sett_audio:
+                el.visible=True
+                el.collision=True
+            for el in chain(sett_graphics, sett_display):
+                el.visible=False
+                el.collision=False
+
+cur_sett_index = 1
+
 def input(key):
     global current_lane, started
-    global is_jumping, is_crouching, resetcrouch, is_paused, falldown, started_animation, bhop_count, bg_music
+    global is_jumping, is_crouching, resetcrouch, is_paused, falldown, started_animation, bhop_count, bg_music, cur_sett_index
     global ranking
     if key == "space" and not started and not started_animation:
         started_animation = True
@@ -314,10 +352,21 @@ def input(key):
     elif key == 'r':
         pause_splash.text=random.choice(string_list)
 
+    #normal stuff under here
+    elif settings_open and not started and not cur_sett_index == 3 and key == 'right arrow' or key == 'd' or key == "e":
+        cur_sett_index += 1
+        settings_select.parent=[setting_cat_graphics, setting_cat_display, setting_cat_audio][cur_sett_index-1]
+        update_settings(cur_sett_index)
+    elif settings_open and not started and not cur_sett_index == 1 and key == 'left arrow' or key == 'a' or key == "q":
+        cur_sett_index -= 1
+        settings_select.parent=[setting_cat_graphics, setting_cat_display, setting_cat_audio][cur_sett_index-1]
+        update_settings(cur_sett_index)
+
     elif is_paused or not started:
         return
 
-    #normal stuff under here
+
+
     elif key == 'd' or key == 'right arrow':
         if current_lane < 1:
             current_lane += 1
@@ -329,7 +378,7 @@ def input(key):
             if last_jump <= 0.5 and not is_crouching:
                 bhop_count += 1
                 if bhop_count >= 3:
-                    add_ranking_points(50, f"+ BHOP (X{bhop_count})", stackable=False)
+                    add_ranking_points(25, f"+ BHOP (X{bhop_count})", stackable=False)
             else:
                 bhop_count = 0
 
@@ -369,54 +418,57 @@ def reset_crouch():
         player.animate('rotation_x', 0, duration=0.1)
 
 def settings():
-    global settings_open
-    if settings_open == True:
-        pause_splash.text=random.choice(string_list)
-        settings_open = False
+    global settings_open, cur_sett_index
+    settings_open = not settings_open
+    main_menu_elements = [pause_title, pause_splash, pause_guide]
+    settings_elements = [settings_aa, settings_aa.text_entity, settings_shadow, settings_shadow.text_entity, settings_language, settings_language.text_entity, settings_bar, settings_select, setting_cat_graphics, setting_cat_display, setting_cat_audio]
+    setting_buttons = [settings_aa, settings_shadow, settings_language]
+
+    if not settings_open:
+        pause_splash.text = random.choice(string_list)   
         settings_to_save = {"antialiasing": antialiasing, "shadows": shadows, "lang": lang_code}
         with open(resource_path("config.json"), "w") as file:
             json.dump(settings_to_save, file, indent=4)
-        camera.animate_z(0, duration=1, curve=curve.out_sine)
-        pause_title.fade_in(duration=1, curve=curve.out_sine)
-        pause_splash.fade_in(duration=1, curve=curve.out_sine)
-        pause_guide.fade_in(duration=1, curve=curve.out_sine)
-        settings_aa.fade_out(duration=1, curve=curve.out_sine)
-        settings_aa.text_entity.fade_out(duration=1, curve=curve.out_sine)
-        settings_shadow.fade_out(duration=1, curve=curve.out_sine)
-        settings_shadow.text_entity.fade_out(duration=1, curve=curve.out_sine)
-        settings_language.fade_out(duration=1, curve=curve.out_sine)
-        settings_language.text_entity.fade_out(duration=1, curve=curve.out_sine)
-        settings_aa.collision=False
-        settings_shadow.collision=False
-        settings_language.collision=False
-        pause_sett.text = lang["settings_tip"]
+        camera.animate_z(0, duration=1, curve=curve.out_sine)     
+        for el in main_menu_elements:
+            el.fade_in(duration=1, curve=curve.out_sine)
+        for el in settings_elements:
+            el.fade_out(duration=1, curve=curve.out_sine)
+        for btn in setting_buttons:
+            btn.collision = False           
+        pause_sett.text = lang["settings_tip"]    
+
     else:
-        settings_open = True
+        cur_sett_index = 1
+        settings_select.parent=[setting_cat_graphics, setting_cat_display, setting_cat_audio][cur_sett_index-1]
         camera.animate_z(-1.5, duration=1, curve=curve.out_sine)
-        pause_title.fade_out(duration=1, curve=curve.out_sine)
-        pause_splash.fade_out(duration=1, curve=curve.out_sine)
-        pause_guide.fade_out(duration=1, curve=curve.out_sine)
-        settings_aa.fade_in(duration=1, curve=curve.out_sine)
-        settings_aa.text_entity.fade_in(duration=1, curve=curve.out_sine)
-        settings_shadow.fade_in(duration=1, curve=curve.out_sine)
-        settings_shadow.text_entity.fade_in(duration=1, curve=curve.out_sine)
-        settings_language.fade_in(duration=1, curve=curve.out_sine)
-        settings_language.text_entity.fade_in(duration=1, curve=curve.out_sine)
-        settings_language.collision=True
-        settings_aa.collision=True
-        settings_shadow.collision=True
+        for el in main_menu_elements:
+            el.fade_out(duration=1, curve=curve.out_sine)
+        for el in settings_elements:
+            el.fade_in(duration=1, curve=curve.out_sine)
+        for btn in setting_buttons:
+            btn.collision = True
+        for el in sett_graphics:
+            el.visible=True
+        for el in chain(sett_display, sett_audio):
+            el.visible=False
+            el.collision = False
+            
         pause_sett.text = lang["exit_settings_tip"]
+
+
 
 def start_game():
     global started
     started = True
-    all_delete = [settings_aa, settings_shadow, settings_language, settings_warning, pause_title, pause_sett, pause_splash, pause_dc, pause_ver]
+    all_delete = [settings_aa, settings_shadow, settings_language, settings_warning, pause_title, pause_sett, pause_splash, pause_dc, pause_ver, idle_player]
     for item in all_delete:
         destroy(item)
 
 def die():
     global dead
     dead = True
+    resetcrouch.pause()
     player.animate_y(0.0, duration=0.1)
     player.animate('rotation_x', 90, duration=0.1)
     pause_bg.fade_in(duration=3, curve=curve.linear)
@@ -432,7 +484,8 @@ def update():
     global move_speed, last_rpc_update, points, dead, is_jumping, is_crouching, bg_music, mm_bg_music, started, speedcamera_taken, car_passed, fence_passed, ranking_points, ranking_letter, ranking_decay, last_jump #why are there so many
     player.rotation_y += 50 * time.dt #dis is walking animation. dont touch (actually. touch it once u got 3 .obj files. one for each animation keyframe. cuz ursina like hates armatures)
     player_col_cube.x = player.x
-    idle_player.rotation_y += 50 * time.dt
+    if not started:
+        idle_player.rotation_y += 50 * time.dt
     if is_paused and is_crouching:
         resetcrouch.pause()
     elif not is_paused and is_crouching:
@@ -561,7 +614,6 @@ def update():
         except Exception:
             rpc_connected = False
         last_rpc_update = time.time()
-
     if started_animation and bg_music is None:
         mm_bg_music.stop()
         bg_music = Audio('assets/timmybreadbullrunner.wav', loop=True, autoplay=True) #dis a fire beat dont touch (might add main menu music later (done))
