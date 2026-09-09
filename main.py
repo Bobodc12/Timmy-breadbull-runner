@@ -409,7 +409,10 @@ def settings():
 
 def start_game():
     global started
-    started = True #top 10 most emotional functions in human history. 2 lines long
+    started = True
+    all_delete = [settings_aa, settings_shadow, settings_language, settings_warning, pause_title, pause_sett, pause_splash, pause_dc, pause_ver]
+    for item in all_delete:
+        destroy(item)
 
 def die():
     global dead
