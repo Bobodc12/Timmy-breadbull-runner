@@ -208,7 +208,7 @@ message_duration = 5 #5 seconds is good dont touch
 for i in range(8):
     x_pos = -0.4 + (i * 0.0027)
     y_pos = 0.1 - (i * 0.060)
-    row = Text(text='', position=(x_pos, y_pos, -0.5), rotation_x=0, font=font_path, parent=ranking_bg, scale=3)
+    row = Text(text=' ', position=(x_pos, y_pos, -0.5), rotation_x=0, font=font_path, parent=ranking_bg, scale=3)
     text_rows.append(row)
 
 def update_text_display():
