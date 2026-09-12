@@ -1,4 +1,5 @@
 from ensurepip import version
+from statistics import multimode
 
 # pyrefly: ignore [missing-import]
 from panda3d.core import loadPrcFileData
@@ -20,7 +21,7 @@ import webbrowser
 from babel import Locale
 from itertools import chain
 
-VERSION = "v1.4.1-alpha"
+VERSION = "v1.4.2-alpha"
 
 client_id = '1535037932828889178' #for discord rpc
 
@@ -60,6 +61,7 @@ antialiasing = config_file["antialiasing"]
 pre_aa = config_file["antialiasing"]
 antialiasing_changed = False
 shadows = config_file["shadows"]
+muted = config_file["mute"]
 
 locale = Locale('en')
 lang_code = config_file["lang"]
@@ -100,6 +102,8 @@ obstacle3 = Entity(model='assets/school bus.obj', texture='busdiffuse.png', posi
 speedcamera = Entity(model='assets/SpeedCam.obj', texture='SpeedCam.png', position=(6, 0, 30), rotation=(0, -90, 0), shader=lit_with_shadows_shader) #will affect ur ranking later (done)
 #where is freddy fazbear
 
+powerup1 = Entity(model='assets/breadbull.obj', texture='canofbreadbull.png', position=(3, 1, 35), shader=lit_with_shadows_shader, scale=0.5, rotation_z=20, collider='box')
+
 thesun = DirectionalLight(position=(10, 2, 3), shadows=shadows, rotation=(90, 0, 0), color=Vec4(1, 1, 1, 1))
 if shadows:
     thesun.shadow_map_resolution = Vec2(2048, 2048)
@@ -139,6 +143,10 @@ def change_lang():
     lang_code = avail_lang[lang_index]
     lang_name = locale.languages[lang_code]
     settings_language.text=(f'language\ncurrently set to:\n{lang_name}')
+def toggle_mute():
+    global muted
+    muted = not muted
+    settings_mute.text=(f'muted\ncurrently set to:\n{muted}')
 
 setting_cat_graphics = Text(text="GRAPHICS", scale=1.5, position=(0, 0.45), origin=(0, 0), color=color.black, alpha=0)
 setting_cat_display = Text(text="DISPLAY", scale=1.5, position=(0.3, 0.45), origin=(0, 0), color=color.black, alpha=0)
@@ -151,16 +159,18 @@ settings_select = Entity(model='quad', parent=setting_cat_graphics, z=0.5, scale
 settings_aa = Button(text=lang["anti_aliasing"].format(value=antialiasing), scale=(0.3, 0.1), on_click=toggle_aa, position=(0.6, 0.3), alpha=0, collision=False)
 settings_shadow = Button(text=lang["shadows"].format(value=shadows), scale=(0.3, 0.1), on_click=toggle_shadows, position=(0.6, 0.17), alpha=0, collision=False)
 settings_language = Button(text=f'language\ncurrently set to:\n{lang_name}', scale=(0.3, 0.1), on_click=change_lang, position=(0.6, 0.3), alpha=0, collision=False) #this will be hardcoded so u wont accedently set the language to one u dont know and softlock urself
+settings_mute = Button(text=f'muted\ncurrently set to:\n{muted}', scale=(0.3, 0.1), on_click=toggle_mute, position=(0.6, 0.3), alpha=0, collision=False)
 settings_aa.text_entity.alpha=0
 settings_shadow.text_entity.alpha=0
 settings_language.text_entity.alpha=0
+settings_mute.text_entity.alpha=0
 settings_warning = Text(text=' ', color=color.yellow, position=(0.35, 0.42))
 if lang_code == 'fr':
     settings_warning.x=0.30
 
 sett_graphics = [settings_aa, settings_shadow]
 sett_display = [settings_language]
-sett_audio = []
+sett_audio = [settings_mute]
 
 player.visible = False
 idle_player.visible = True
@@ -196,9 +206,9 @@ bhop_count = 0
 message_duration = 5 #5 seconds is good dont touch
 
 for i in range(8):
-    x_pos = -0.45 + (i * 0.0027)
+    x_pos = -0.4 + (i * 0.0027)
     y_pos = 0.1 - (i * 0.060)
-    row = Text(text='', position=(x_pos, y_pos, -0.1), rotation_x=0, font=font_path, parent=ranking_bg, scale=3)
+    row = Text(text='', position=(x_pos, y_pos, -0.5), rotation_x=0, font=font_path, parent=ranking_bg, scale=3)
     text_rows.append(row)
 
 def update_text_display():
@@ -264,6 +274,7 @@ window.borderless = False
 
 dead = False
 godmode = False #ooo you like cheating dont you?
+invincible = False #this is not the same thing as godmode
 started = False
 settings_open = False
 is_paused = False
@@ -421,12 +432,12 @@ def settings():
     global settings_open, cur_sett_index
     settings_open = not settings_open
     main_menu_elements = [pause_title, pause_splash, pause_guide]
-    settings_elements = [settings_aa, settings_aa.text_entity, settings_shadow, settings_shadow.text_entity, settings_language, settings_language.text_entity, settings_bar, settings_select, setting_cat_graphics, setting_cat_display, setting_cat_audio]
-    setting_buttons = [settings_aa, settings_shadow, settings_language]
+    settings_elements = [settings_aa, settings_aa.text_entity, settings_shadow, settings_shadow.text_entity, settings_language, settings_language.text_entity, settings_mute, settings_mute.text_entity, settings_bar, settings_select, setting_cat_graphics, setting_cat_display, setting_cat_audio]
+    setting_buttons = [settings_aa, settings_shadow, settings_language, settings_mute]
 
     if not settings_open:
         pause_splash.text = random.choice(string_list)   
-        settings_to_save = {"antialiasing": antialiasing, "shadows": shadows, "lang": lang_code}
+        settings_to_save = {"antialiasing": antialiasing, "shadows": shadows, "lang": lang_code, "mute": muted}
         with open(resource_path("config.json"), "w") as file:
             json.dump(settings_to_save, file, indent=4)
         camera.animate_z(0, duration=1, curve=curve.out_sine)     
@@ -468,7 +479,8 @@ def start_game():
 def die():
     global dead
     dead = True
-    resetcrouch.pause()
+    if is_crouching:
+        resetcrouch.kill()
     player.animate_y(0.0, duration=0.1)
     player.animate('rotation_x', 90, duration=0.1)
     pause_bg.fade_in(duration=3, curve=curve.linear)
@@ -480,10 +492,41 @@ def death_text():
     pause_guide.position = 0, 0
     pause_guide.fade_in(duration=0.5, curve=curve.linear)
 
+def breadbullpowerup():
+    global invincible 
+    invincible = True
+    resetinvincible = invoke(invincible_reset, delay=10)
+
+def invincible_reset():
+    global invincible
+    if invincible:
+        invincible = False
+
+def camera_shake(intensity=0.3, duration=0.2):
+    original_x = camera.x
+    original_y = camera.y
+    def camera_step(remaining_time):
+        if remaining_time > 0:
+            camera.x = original_x + random.uniform(-intensity, intensity)
+            camera.y = original_y + random.uniform(-intensity, intensity)
+            invoke(camera_step, remaining_time - 0.03, delay=0.03)
+        else:
+            camera.x = original_x
+            camera.y = original_y
+    camera_step(duration)
+
+def spawn_powerup1():
+    powerup1.z = 50
+    powerup1.y = 1
+    while powerup1.intersects():
+        powerup1.x = random.choice(lanes)
+
+
 def update():
-    global move_speed, last_rpc_update, points, dead, is_jumping, is_crouching, bg_music, mm_bg_music, started, speedcamera_taken, car_passed, fence_passed, ranking_points, ranking_letter, ranking_decay, last_jump #why are there so many
-    player.rotation_y += 50 * time.dt #dis is walking animation. dont touch (actually. touch it once u got 3 .obj files. one for each animation keyframe. cuz ursina like hates armatures)
+    global move_speed, last_rpc_update, points, dead, is_jumping, is_crouching, bg_music, mm_bg_music, started, speedcamera_taken, car_passed, fence_passed, ranking_points, ranking_letter, ranking_decay, last_jump, invincible #why are there so many
+    player.rotation_y += 50 * time.dt * (invincible * 5 + 1) #dis is walking animation. dont touch (actually. touch it once u got 3 .obj files. one for each animation keyframe. cuz ursina like hates armatures)
     player_col_cube.x = player.x
+    powerup1.rotation_y += 50 * time.dt
     if not started:
         idle_player.rotation_y += 50 * time.dt
     if is_paused and is_crouching:
@@ -549,37 +592,63 @@ def update():
         obstacle2.z -= (move_speed * time.dt) * 30
         obstacle3.z -= (move_speed * time.dt) * 30
         speedcamera.z -= (move_speed * time.dt) * 30
+        powerup1.z -= (move_speed * time.dt) * 30
 
         if not is_jumping and player_col_cube.intersects(obstacle1) and not godmode:
-            die()
+            if invincible:
+                obstacle1.y = -10
+                add_ranking_points(200, "+ KILL", stackable=True)
+                invincible = False
+                camera_shake() #add this later
+            else:
+                die()
         elif not car_passed and obstacle1.z <= player.z and is_jumping == True and player_col_cube.x == obstacle1.x:
             car_passed = True
             add_ranking_points(50, "+ HOOD JUMP", stackable=True)
 
         if player_col_cube.intersects(obstacle2) and not godmode:
             if not is_crouching:
-                die()
+                if invincible:
+                    obstacle2.y = -10
+                    add_ranking_points(200, "+ KILL", stackable=True)
+                    invincible = False
+                    camera_shake()
+                else:
+                    die()
             elif not fence_passed:
                 fence_passed = True
                 add_ranking_points(50, "+ SLIDE", stackable=True)
 
         if player_col_cube.intersects(obstacle3) and not godmode: #no way u jumping over this
-            die() #yeah thats what i thought, u really tryna jump over a school bus?
-            #congrats school bus, ur the only obstacle without a ranking text
+            if invincible:
+                obstacle3.y = -10
+                add_ranking_points(250, "+ WAR CRIME", stackable=True) #heyy thats not very nice D:
+                invincible = False
+                camera_shake()
+            else:
+                die() #yeah thats what i thought, u really tryna jump over a school bus?
+
+        if player_col_cube.intersects(powerup1):
+            powerup1.y = -10 #fire way of hiding it
+            add_ranking_points(50, "+ 300% SAFE", stackable = True)
+            breadbullpowerup()
 
         if obstacle1.z < -10:
             obstacle1.z = 50
             obstacle1.x = random.choice(lanes)
             car_passed = False
+            obstacle1.y = 1.5
 
         if obstacle2.z < -10:
             obstacle2.z = 50
             obstacle2.x = random.choice(lanes)
             fence_passed = False
+            obstacle2.y = 0.3
 
         if obstacle3.z < -10:
             obstacle3.z = 50 #this is so shitty. im lovin it
             obstacle3.x = random.choice(lanes)
+            obstacle3.y = 0
 
         if speedcamera.z < 2 and not speedcamera_taken:
             speedcamera_taken = True
@@ -588,6 +657,12 @@ def update():
         if speedcamera.z < -10:
             speedcamera.z = 200
             speedcamera_taken = False
+
+        if powerup1.z < -10:
+            invoke(spawn_powerup1, delay=30)
+            powerup1.z = 50000
+            #powerup1.y = 1
+            #powerup1.x = random.choice(lanes)
 
         move_speed += 0.0001 * (time.dt * 72) #so like next git commit, can i like add "* (time.dt * 72)" to this line. please? wait nuh uh im doing it now
 
@@ -619,5 +694,9 @@ def update():
         bg_music = Audio('assets/timmybreadbullrunner.wav', loop=True, autoplay=True) #dis a fire beat dont touch (might add main menu music later (done))
     elif mm_bg_music is None:
         mm_bg_music = Audio('assets/mainmenu.wav', loop=True, autoplay=True)
+    if bg_music:
+        bg_music.volume = not muted
+    if mm_bg_music:
+        mm_bg_music.volume = not muted
 
 app.run()
