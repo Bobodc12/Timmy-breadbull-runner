@@ -2,6 +2,7 @@ from ensurepip import version
 from statistics import multimode
 
 # pyrefly: ignore [missing-import]
+#pyrefly kept giving me errors for no reason btw ^^
 from panda3d.core import loadPrcFileData
 loadPrcFileData('', 'shadow-depth-bits 24')
 loadPrcFileData('', 'shadow-depth-bits 24')
@@ -30,7 +31,7 @@ rpc_connected = False
 
 try:
     RPC = Presence(client_id)
-    RPC.connect()
+    RPC.connect() #beep boop bapp im now sharing everything bout timmy in my discord rpc beep boop bapp
     rpc_connected = True
 except Exception as e:
     print("launching game without discord RPC") #cuz i will prob play this game on my school laptop in the future
@@ -43,7 +44,7 @@ def resource_path(relative_path):
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
 
-start_time = time.time()
+start_time = time.time() #time is time time, i get it
 last_rpc_update = 0
 update_interval = 15 #to avoid rate limiting
 
@@ -71,15 +72,15 @@ if lang_code in avail_lang:
     pre_lang_index = lang_index
     #print(lang_index)
 else:
-    print("==============\n\n\ncritical error with language stuff\n\n\n==================")
+    print("==============\n\n\ncritical error with language stuff\n\n\n==================") #why does this exist
 with open(resource_path(f"lang/{lang_code}.json"), "r", encoding="utf-8") as file:
     lang = json.load(file)
 
 if antialiasing == "true":
     loadPrcFileData('', 'framebuffer-multisample 1')
-    loadPrcFileData('', 'multisamples 4')
+    loadPrcFileData('', 'multisamples 4') #4x sucks. wait im the dev i can just increase it if i want
 
-loadPrcFileData('', 'shadow-bias 0.01')
+loadPrcFileData('', 'shadow-bias 0.01') #soviet bias war thunder reference
 
 def open_discord():
     webbrowser.open('https://discord.gg/DAVM6RSJ23')
@@ -125,7 +126,7 @@ pause_guide = Text(text=lang["start_tip"], position=(-0.8, -0.1), scale=1.75, fo
 pause_sett = Text(text=lang["settings_tip"], position=(-0.8, -0.2), scale=1.75, font=font_path, color=color.white)
 pause_splash = Text(text=random.choice(string_list), position=(0.325, -0.02, -0.1), scale=0.5, font=font_path, color=color.yellow, rotation=(0, 0, -15), parent=pause_title, origin=(0, 0, 0)) #as i said, these are goated
 pause_bg = Entity(model='quad', scale=(100,100), position=(4, 1, 0), rotation=(0, 90, 0), color=(0, 0, 0, 0.9))
-pause_dc = Button(texture='Discord-Symbol-Blurple.png', scale=(0.075, 0.075*0.76), z=10, color=color.white, position=(0.85, -0.45), on_click=open_discord)
+pause_dc = Button(texture='Discord-Symbol-Blurple.png', scale=(0.075, 0.075*0.76), z=10, color=color.white, position=(0.85, -0.45), on_click=open_discord) #i love blurple
 pause_ver = Text(text=VERSION, position=(-0.9, -0.475))
 
 def toggle_aa():
@@ -165,12 +166,13 @@ settings_shadow.text_entity.alpha=0
 settings_language.text_entity.alpha=0
 settings_mute.text_entity.alpha=0
 settings_warning = Text(text=' ', color=color.yellow, position=(0.35, 0.42))
-if lang_code == 'fr':
+if lang_code == 'fr': #oui oui oiuii la baguette female baguette i think la le la le baguette
     settings_warning.x=0.30
 
 sett_graphics = [settings_aa, settings_shadow]
 sett_display = [settings_language]
 sett_audio = [settings_mute]
+#i could prob automate all this with a singular class but thats boring
 
 player.visible = False
 idle_player.visible = True
@@ -218,7 +220,7 @@ def update_text_display():
         else:
             text_rows[i].text = ''
 
-def add_ranking_points(points_to_add, message=None, stackable=True):
+def add_ranking_points(points_to_add, message=None, stackable=True): #i dont know how this work, dont even think of touching it
     global ranking_points, points
     ranking_points += points_to_add
     points += points_to_add
@@ -302,7 +304,7 @@ update_fps()
 
 def update_settings(category):
     if settings_open:
-        if category == 1:
+        if category == 1: #oui oui oui, el graphics seniorita
             for el in sett_graphics:
                 el.visible=True
                 el.collision=True
@@ -330,7 +332,7 @@ def input(key):
     global current_lane, started
     global is_jumping, is_crouching, resetcrouch, is_paused, falldown, started_animation, bhop_count, bg_music, cur_sett_index
     global ranking
-    if key == "space" and not started and not started_animation:
+    if key == "space" and not started and not started_animation: #what the fuck is this. im scared
         started_animation = True
         camera.animate_y(10, duration=1.0, curve=curve.out_sine)
         camera.animate_x(0, duration=1.0, curve=curve.out_sine)
@@ -376,7 +378,7 @@ def input(key):
     elif is_paused or not started:
         return
 
-
+    #big ahh gap here for some reason. i just added this comment to make the gap less boring
 
     elif key == 'd' or key == 'right arrow':
         if current_lane < 1:
@@ -499,7 +501,7 @@ def breadbullpowerup():
 
 def invincible_reset():
     global invincible
-    if invincible:
+    if invincible: #this line isnt even needed
         invincible = False
 
 def camera_shake(intensity=0.3, duration=0.2):
@@ -666,7 +668,7 @@ def update():
 
         move_speed += 0.0001 * (time.dt * 72) #so like next git commit, can i like add "* (time.dt * 72)" to this line. please? wait nuh uh im doing it now
 
-        points += (0.1 * multiplier) * (time.dt * 72) #same thing with this one
+        points += (0.1 * multiplier) * (time.dt * 72) #same thing with this one. wait why 72? i forgor
 
         if is_jumping:
             last_jump = 0
