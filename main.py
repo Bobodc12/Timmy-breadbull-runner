@@ -1,26 +1,20 @@
-from ensurepip import version
-from statistics import multimode
-
-# pyrefly: ignore [missing-import]
-#pyrefly kept giving me errors for no reason btw ^^
 from panda3d.core import loadPrcFileData
+
 loadPrcFileData('', 'shadow-depth-bits 24')
 loadPrcFileData('', 'shadow-depth-bits 24')
 loadPrcFileData('', 'shadow-smoothing 1')
-from ursina import *
-from direct.actor.Actor import Actor #wait why did i import this again?
-import random
-from pypresence import Presence, exceptions
-import time
-import math
-from collections import Counter
 import json
-import sys
 import os
-from ursina.shaders import lit_with_shadows_shader
+import random
+import sys
+import time
 import webbrowser
-from babel import Locale
 from itertools import chain
+
+from babel import Locale
+from pypresence import Presence
+from ursina import *
+from ursina.shaders import lit_with_shadows_shader
 
 VERSION = "v1.4.2-alpha"
 
@@ -33,14 +27,14 @@ try:
     RPC = Presence(client_id)
     RPC.connect() #beep boop bapp im now sharing everything bout timmy in my discord rpc beep boop bapp
     rpc_connected = True
-except Exception as e:
+except Exception:  # noqa: BLE001
     print("launching game without discord RPC") #cuz i will prob play this game on my school laptop in the future
 
 
 def resource_path(relative_path):
     try:
         base_path = sys._MEIPASS
-    except Exception:
+    except Exception:  # noqa: BLE001
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
 
@@ -329,9 +323,8 @@ def update_settings(category):
 cur_sett_index = 1
 
 def input(key):
-    global current_lane, started
-    global is_jumping, is_crouching, resetcrouch, is_paused, falldown, started_animation, bhop_count, bg_music, cur_sett_index
-    global ranking
+    global current_lane
+    global is_jumping, is_crouching, resetcrouch, is_paused, falldown, started_animation, bhop_count, cur_sett_index
     if key == "space" and not started and not started_animation: #what the fuck is this. im scared
         started_animation = True
         camera.animate_y(10, duration=1.0, curve=curve.out_sine)
@@ -366,11 +359,11 @@ def input(key):
         pause_splash.text=random.choice(string_list)
 
     #normal stuff under here
-    elif settings_open and not started and not cur_sett_index == 3 and key == 'right arrow' or key == 'd' or key == "e":
+    elif settings_open and not started and  cur_sett_index != 3 and key == 'right arrow' or key == 'd' or key == "e":
         cur_sett_index += 1
         settings_select.parent=[setting_cat_graphics, setting_cat_display, setting_cat_audio][cur_sett_index-1]
         update_settings(cur_sett_index)
-    elif settings_open and not started and not cur_sett_index == 1 and key == 'left arrow' or key == 'a' or key == "q":
+    elif settings_open and not started and  cur_sett_index != 1 and key == 'left arrow' or key == 'a' or key == "q":
         cur_sett_index -= 1
         settings_select.parent=[setting_cat_graphics, setting_cat_display, setting_cat_audio][cur_sett_index-1]
         update_settings(cur_sett_index)
@@ -413,7 +406,6 @@ def input(key):
     player.animate_x(target_x, duration=0.1, curve=curve.out_quad)
 
 def fall_down(): #if it works, dont touch it (it applies for fall_down and reset_crouch)
-    global is_jumping
     if is_paused:
         return
     player.animate_y(0, duration=0.3 / move_speed, curve=curve.in_sine)
@@ -497,7 +489,8 @@ def death_text():
 def breadbullpowerup():
     global invincible 
     invincible = True
-    resetinvincible = invoke(invincible_reset, delay=10)
+    #resetinvincible = invoke(invincible_reset, delay=10)
+    invoke(invincible_reset, delay=10)
 
 def invincible_reset():
     global invincible
@@ -525,7 +518,7 @@ def spawn_powerup1():
 
 
 def update():
-    global move_speed, last_rpc_update, points, dead, is_jumping, is_crouching, bg_music, mm_bg_music, started, speedcamera_taken, car_passed, fence_passed, ranking_points, ranking_letter, ranking_decay, last_jump, invincible #why are there so many
+    global move_speed, last_rpc_update, points, bg_music, mm_bg_music, speedcamera_taken, car_passed, fence_passed, ranking_points, ranking_letter, ranking_decay, last_jump, invincible, rpc_connected #why are there so many
     player.rotation_y += 50 * time.dt * (invincible * 5 + 1) #dis is walking animation. dont touch (actually. touch it once u got 3 .obj files. one for each animation keyframe. cuz ursina like hates armatures)
     player_col_cube.x = player.x
     powerup1.rotation_y += 50 * time.dt
@@ -677,7 +670,7 @@ def update():
 
 
         points_counter.text = lang["points_label"] + str(int(points))
-        multi_counter.text = f' '
+        multi_counter.text = ' '
 
     if time.time() - last_rpc_update > update_interval:
         try:
@@ -688,7 +681,7 @@ def update():
                 large_image="logo",
                 large_text=f"Timmy Breadbull Runner {VERSION}"
             )
-        except Exception:
+        except Exception:  # noqa: BLE001
             rpc_connected = False
         last_rpc_update = time.time()
     if started_animation and bg_music is None:
